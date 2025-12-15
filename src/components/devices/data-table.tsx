@@ -60,7 +60,7 @@ export function DataTable<TData, TValue>({
     <Card>
       <div className="flex items-center p-4">
         <Input
-          placeholder="Фильтр..."
+          placeholder="Фильтр по названию..."
           value={(filterColumn?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             filterColumn?.setFilterValue(event.target.value)
