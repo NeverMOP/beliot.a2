@@ -59,7 +59,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = false,
+      defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
       side = "left",
@@ -170,7 +170,7 @@ const Sidebar = React.forwardRef<
   (
     {
       variant = "sidebar",
-      collapsible = "offcanvas",
+      collapsible = "icon",
       className,
       children,
       ...props
@@ -332,11 +332,14 @@ const SidebarInset = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"main">
 >(({ className, ...props }, ref) => {
+  const { state } = useSidebar();
   return (
     <main
       ref={ref}
       className={cn(
-        "flex min-h-svh flex-1 flex-col bg-background",
+        "flex min-h-svh flex-1 flex-col bg-background transition-[margin-left] duration-200 ease-linear",
+        "md:group-data-[state=expanded]/sidebar-wrapper:ml-[var(--sidebar-width)]",
+        "md:group-data-[state=collapsed]/sidebar-wrapper:ml-[var(--sidebar-width-icon)]",
         className
       )}
       {...props}
