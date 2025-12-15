@@ -19,7 +19,7 @@ export function AppSidebar() {
         collapsible="icon"
         style={
             {
-                '--sidebar-width': '17rem',
+                '--sidebar-width': '15rem',
             } as React.CSSProperties
         }
     >
