@@ -9,7 +9,7 @@ import { Button } from '../ui/button';
 import React from 'react';
 
 const mainNavLinks = [
-    { href: '/dashboard', label: 'Дашборд' },
+    { href: '/dashboard', label: 'Панель мониторинга' },
     { href: '/objects', label: 'Объекты' },
     { href: '/devices', label: 'Устройства' },
     { href: '/gateways', label: 'Шлюзы' },
