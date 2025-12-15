@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer } from "lucide-react"
 import Link from "next/link"
+import { getReadingsForDevice } from "@/lib/data"
 
 const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" | "destructive" | "secondary" => {
     switch (status) {
@@ -66,6 +67,32 @@ export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: "address",
     header: "Адрес",
+  },
+    {
+    id: "latest_data",
+    header: "Последние данные",
+    cell: ({ row }) => {
+      const device = row.original;
+      const readings = getReadingsForDevice(device.id);
+      const latestReading = readings[readings.length - 1];
+
+      if (!latestReading) {
+        return <span className="text-muted-foreground">N/A</span>;
+      }
+
+      let value, unit;
+      if (device.type === 'water' && latestReading.in1) {
+        value = latestReading.in1.toFixed(2);
+        unit = device.unit_volume;
+      } else if (device.type === 'heat' && latestReading.energy) {
+        value = latestReading.energy.toFixed(2);
+        unit = device.unit_energy;
+      } else {
+         return <span className="text-muted-foreground">N/A</span>;
+      }
+
+      return <span>{value} {unit}</span>;
+    }
   },
   {
     accessorKey: "status",
