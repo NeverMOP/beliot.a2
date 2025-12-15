@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: 'IoT-платформа для мониторинга устройств',
 };
 
+const backgroundImageBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // This is a placeholder, the actual image is complex
+
 export default function RootLayout({
   children,
 }: Readonly<{
