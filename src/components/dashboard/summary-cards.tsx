@@ -21,15 +21,15 @@ export function SummaryCards() {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {summaries.map((summary) => (
         <Link key={summary.title} href={summary.href}>
-            <Card className="transition-all hover:shadow-md hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{summary.title}</CardTitle>
-                <summary.icon className={cn('h-8 w-8', summary.color)} />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{summary.value}</div>
+          <Card className="transition-all hover:shadow-md hover:-translate-y-1">
+            <CardContent className="flex flex-row items-center justify-between p-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{summary.title}</p>
+                <p className="text-2xl font-bold">{summary.value}</p>
+              </div>
+              <summary.icon className={cn('h-10 w-10', summary.color)} />
             </CardContent>
-            </Card>
+          </Card>
         </Link>
       ))}
     </div>
