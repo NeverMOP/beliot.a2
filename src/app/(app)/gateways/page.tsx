@@ -11,9 +11,12 @@ export default function GatewaysPage() {
   const gateways = devices.filter((device) => device.is_gateway);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <CreateGatewayForm />
+    <div className="space-y-4">
+      <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
+        <h1 className="text-lg font-semibold text-secondary-foreground">Шлюзы</h1>
+        <div className="ml-auto flex items-center gap-2">
+            <CreateGatewayForm />
+        </div>
       </div>
       <DataTable columns={columns} data={gateways} />
     </div>

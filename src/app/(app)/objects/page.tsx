@@ -7,9 +7,12 @@ import { CreateObjectForm } from "@/components/objects/create-object-form";
 
 export default function ObjectsPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <CreateObjectForm />
+    <div className="space-y-4">
+      <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
+        <h1 className="text-lg font-semibold text-secondary-foreground">Объекты</h1>
+        <div className="ml-auto flex items-center gap-2">
+            <CreateObjectForm />
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>

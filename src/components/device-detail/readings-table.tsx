@@ -30,6 +30,13 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { Settings } from "lucide-react"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -143,6 +150,30 @@ export function ReadingsTable<TData, TValue>({
                 </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 pt-4">
+                 <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium">Строк на странице</p>
+                    <Select
+                    value={`${table.getState().pagination.pageSize}`}
+                    onValueChange={(value) => {
+                        table.setPageSize(Number(value))
+                    }}
+                    >
+                    <SelectTrigger className="h-8 w-[70px]">
+                        <SelectValue placeholder={table.getState().pagination.pageSize} />
+                    </SelectTrigger>
+                    <SelectContent side="top">
+                        {[10, 25, 50, 100].map((pageSize) => (
+                        <SelectItem key={pageSize} value={`${pageSize}`}>
+                            {pageSize}
+                        </SelectItem>
+                        ))}
+                    </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                    Стр. {table.getState().pagination.pageIndex + 1} из{' '}
+                    {table.getPageCount()}
+                </div>
                 <Button
                 variant="outline"
                 size="sm"

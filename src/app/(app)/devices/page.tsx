@@ -49,12 +49,14 @@ export default function DevicesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
+        <h1 className="text-lg font-semibold text-secondary-foreground">Устройства</h1>
+        <div className="ml-auto flex items-center gap-2">
             <Button
                 variant={typeFilter === 'all' ? 'default' : 'outline'}
                 onClick={() => setTypeFilter('all')}
                 size="sm"
+                className="bg-background/80"
             >
                 <List className="mr-2 h-4 w-4" />
                 Все
@@ -63,6 +65,7 @@ export default function DevicesPage() {
                 variant={typeFilter === 'water' ? 'default' : 'outline'}
                 onClick={() => setTypeFilter('water')}
                  size="sm"
+                 className="bg-background/80"
             >
                 <Droplets className="mr-2 h-4 w-4" />
                 Вода
@@ -71,13 +74,12 @@ export default function DevicesPage() {
                 variant={typeFilter === 'heat' ? 'default' : 'outline'}
                 onClick={() => setTypeFilter('heat')}
                  size="sm"
+                 className="bg-background/80"
             >
                 <Thermometer className="mr-2 h-4 w-4" />
                 Тепло
             </Button>
-        </div>
-         <div className="flex flex-1 items-center gap-2 md:flex-initial">
-            <div className="relative w-full">
+            <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
                     placeholder={`Поиск по '${searchFields.find(f => f.value === searchField)?.label}'...`}
@@ -96,8 +98,8 @@ export default function DevicesPage() {
                     ))}
                 </SelectContent>
             </Select>
+            <CreateDeviceForm />
         </div>
-        <CreateDeviceForm />
       </div>
       <DataTable columns={columns} data={devices} columnFilters={columnFilters} setColumnFilters={setColumnFilters} />
     </div>
