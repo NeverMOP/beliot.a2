@@ -28,8 +28,8 @@ export default function RootLayout({
             <Image
                 src="https://storage.googleapis.com/stedi-assets/belit-background-iot.png"
                 alt="IoT background"
-                layout="fill"
-                objectFit="cover"
+                fill
+                className="object-cover"
                 quality={100}
             />
         </div>

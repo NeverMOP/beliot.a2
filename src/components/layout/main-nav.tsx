@@ -10,7 +10,7 @@ import React from 'react';
 import Image from 'next/image';
 
 const mainNavLinks = [
-    { href: '/dashboard', label: 'Панель мониторинга' },
+    { href: '/dashboard', label: 'Дашборд' },
     { href: '/objects', label: 'Объекты' },
     { href: '/devices', label: 'Устройства' },
     { href: '/gateways', label: 'Шлюзы' },
