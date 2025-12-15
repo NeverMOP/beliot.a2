@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { devices } from '@/lib/data';
 import { CircuitBoard, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function SummaryCards() {
   const totalDevices = devices.length;
@@ -9,24 +11,26 @@ export function SummaryCards() {
   const warningDevices = devices.filter((d) => d.status === 'warning').length;
 
   const summaries = [
-    { title: 'Всего устройств', value: totalDevices, icon: CircuitBoard, color: 'text-muted-foreground' },
-    { title: 'Онлайн', value: onlineDevices, icon: CheckCircle, color: 'text-[hsl(var(--chart-1))]' },
-    { title: 'Офлайн', value: offlineDevices, icon: XCircle, color: 'text-muted-foreground' },
-    { title: 'Предупреждения', value: warningDevices, icon: AlertTriangle, color: 'text-destructive' },
+    { title: 'Всего устройств', value: totalDevices, icon: CircuitBoard, color: 'text-muted-foreground', href: '/devices' },
+    { title: 'Онлайн', value: onlineDevices, icon: CheckCircle, color: 'text-[hsl(var(--chart-1))]', href: '/devices?status=online' },
+    { title: 'Офлайн', value: offlineDevices, icon: XCircle, color: 'text-muted-foreground', href: '/devices?status=offline' },
+    { title: 'Предупреждения', value: warningDevices, icon: AlertTriangle, color: 'text-destructive', href: '/devices?status=warning' },
   ];
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {summaries.map((summary) => (
-        <Card key={summary.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{summary.title}</CardTitle>
-            <summary.icon className={`h-5 w-5 ${summary.color}`} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.value}</div>
-          </CardContent>
-        </Card>
+        <Link key={summary.title} href={summary.href}>
+            <Card className="transition-all hover:shadow-md hover:-translate-y-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{summary.title}</CardTitle>
+                <summary.icon className={cn('h-5 w-5', summary.color)} />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{summary.value}</div>
+            </CardContent>
+            </Card>
+        </Link>
       ))}
     </div>
   );

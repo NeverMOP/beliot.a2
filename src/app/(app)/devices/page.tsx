@@ -8,7 +8,7 @@ import { columns as allColumns } from '@/components/devices/columns';
 import { CreateDeviceForm } from '@/components/devices/create-device-form';
 import { Button } from '@/components/ui/button';
 import { type Device } from '@/lib/types';
-import { List, Droplets, Thermometer, SlidersHorizontal } from 'lucide-react';
+import { List, Droplets, Thermometer, SlidersHorizontal, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -43,6 +43,8 @@ const searchFields: { value: keyof Device; label: string }[] = [
     { value: 'external_id', label: 'Идентификатор' },
 ]
 
+type StatusFilter = 'all' | 'online' | 'offline' | 'warning';
+
 function DesktopControls({
     typeFilter,
     setTypeFilter,
@@ -50,6 +52,8 @@ function DesktopControls({
     setSearchField,
     searchValue,
     setSearchValue,
+    statusFilter,
+    setStatusFilter
 }:{
     typeFilter: 'all' | 'water' | 'heat';
     setTypeFilter: (value: 'all' | 'water' | 'heat') => void;
@@ -57,36 +61,36 @@ function DesktopControls({
     setSearchField: (value: keyof Device) => void;
     searchValue: string;
     setSearchValue: (value: string) => void;
+    statusFilter: StatusFilter;
+    setStatusFilter: (value: StatusFilter) => void;
 }) {
     return (
         <>
-            <Button
-                variant={typeFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setTypeFilter('all')}
-                size="sm"
-                className="bg-background/80"
-            >
-                <List className="mr-2 h-4 w-4" />
-                Все
-            </Button>
-            <Button
-                variant={typeFilter === 'water' ? 'default' : 'outline'}
-                onClick={() => setTypeFilter('water')}
-                 size="sm"
-                 className="bg-background/80"
-            >
-                <Droplets className="mr-2 h-4 w-4" />
-                Вода
-            </Button>
-            <Button
-                variant={typeFilter === 'heat' ? 'default' : 'outline'}
-                onClick={() => setTypeFilter('heat')}
-                 size="sm"
-                 className="bg-background/80"
-            >
-                <Thermometer className="mr-2 h-4 w-4" />
-                Тепло
-            </Button>
+            <div className='flex gap-2 border-r pr-4'>
+                <Button variant={typeFilter === 'all' ? 'default' : 'outline'} onClick={() => setTypeFilter('all')} size="sm" className="bg-background/80" >
+                    <List className="mr-2 h-4 w-4" /> Все типы
+                </Button>
+                <Button variant={typeFilter === 'water' ? 'default' : 'outline'} onClick={() => setTypeFilter('water')} size="sm" className="bg-background/80" >
+                    <Droplets className="mr-2 h-4 w-4" /> Вода
+                </Button>
+                <Button variant={typeFilter === 'heat' ? 'default' : 'outline'} onClick={() => setTypeFilter('heat')} size="sm" className="bg-background/80" >
+                    <Thermometer className="mr-2 h-4 w-4" /> Тепло
+                </Button>
+            </div>
+             <div className='flex gap-2 border-r pr-4'>
+                <Button variant={statusFilter === 'all' ? 'default' : 'outline'} onClick={() => setStatusFilter('all')} size="sm" className="bg-background/80" >
+                    <List className="mr-2 h-4 w-4" /> Все статусы
+                </Button>
+                <Button variant={statusFilter === 'online' ? 'default' : 'outline'} onClick={() => setStatusFilter('online')} size="sm" className="bg-background/80" >
+                    <CheckCircle className="mr-2 h-4 w-4" /> Онлайн
+                </Button>
+                <Button variant={statusFilter === 'offline' ? 'default' : 'outline'} onClick={() => setStatusFilter('offline')} size="sm" className="bg-background/80" >
+                    <XCircle className="mr-2 h-4 w-4" /> Офлайн
+                </Button>
+                 <Button variant={statusFilter === 'warning' ? 'default' : 'outline'} onClick={() => setStatusFilter('warning')} size="sm" className="bg-background/80" >
+                    <AlertTriangle className="mr-2 h-4 w-4" /> Предупреждения
+                </Button>
+            </div>
             <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
@@ -118,6 +122,8 @@ function MobileControls({
     setSearchField,
     searchValue,
     setSearchValue,
+    statusFilter,
+    setStatusFilter
 }:{
     typeFilter: 'all' | 'water' | 'heat';
     setTypeFilter: (value: 'all' | 'water' | 'heat') => void;
@@ -125,6 +131,8 @@ function MobileControls({
     setSearchField: (value: keyof Device) => void;
     searchValue: string;
     setSearchValue: (value: string) => void;
+    statusFilter: StatusFilter;
+    setStatusFilter: (value: StatusFilter) => void;
 }) {
     return (
         <Collapsible className="w-full space-y-4">
@@ -138,6 +146,7 @@ function MobileControls({
                 </CollapsibleTrigger>
             </div>
             <CollapsibleContent className="space-y-4">
+                <p className="font-semibold text-sm">Тип</p>
                 <div className="grid grid-cols-3 gap-2">
                      <Button
                         variant={typeFilter === 'all' ? 'default' : 'outline'}
@@ -164,6 +173,42 @@ function MobileControls({
                         Тепло
                     </Button>
                 </div>
+                 <p className="font-semibold text-sm">Статус</p>
+                 <div className="grid grid-cols-2 gap-2">
+                     <Button
+                        variant={statusFilter === 'all' ? 'default' : 'outline'}
+                        onClick={() => setStatusFilter('all')}
+                        size="sm"
+                    >
+                        <List className="mr-2 h-4 w-4" />
+                        Все
+                    </Button>
+                    <Button
+                        variant={statusFilter === 'online' ? 'default' : 'outline'}
+                        onClick={() => setStatusFilter('online')}
+                         size="sm"
+                    >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Онлайн
+                    </Button>
+                    <Button
+                        variant={statusFilter === 'offline' ? 'default' : 'outline'}
+                        onClick={() => setStatusFilter('offline')}
+                         size="sm"
+                    >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Офлайн
+                    </Button>
+                     <Button
+                        variant={statusFilter === 'warning' ? 'default' : 'outline'}
+                        onClick={() => setStatusFilter('warning')}
+                         size="sm"
+                    >
+                        <AlertTriangle className="mr-2 h-4 w-4" />
+                        Предупр.
+                    </Button>
+                </div>
+                 <p className="font-semibold text-sm">Поиск</p>
                  <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                      <Input
@@ -219,8 +264,10 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
 function DevicesPageContent() {
   const searchParams = useSearchParams();
   const objectNameFromUrl = searchParams.get('object_name');
+  const statusFromUrl = searchParams.get('status') as StatusFilter | null;
   
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>('all');
+  const [statusFilter, setStatusFilter] = React.useState<StatusFilter>(statusFromUrl || 'all');
   const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
   const [searchValue, setSearchValue] = React.useState(objectNameFromUrl || '');
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -239,15 +286,16 @@ function DevicesPageContent() {
     if (typeFilter !== 'all') {
         newColumnFilters.push({ id: 'type', value: typeFilter });
     }
+    if (statusFilter !== 'all') {
+        newColumnFilters.push({ id: 'status', value: statusFilter });
+    }
     
-    // Use initial search value from URL if available
-    const initialSearchValue = objectNameFromUrl || searchValue;
-    if (initialSearchValue) {
-        newColumnFilters.push({ id: searchField, value: initialSearchValue });
+    if (searchValue) {
+        newColumnFilters.push({ id: searchField, value: searchValue });
     }
 
     setColumnFilters(newColumnFilters);
-  }, [typeFilter, searchField, searchValue, objectNameFromUrl]);
+  }, [typeFilter, statusFilter, searchField, searchValue]);
 
   React.useEffect(() => {
     if (objectNameFromUrl) {
@@ -255,6 +303,13 @@ function DevicesPageContent() {
       setSearchValue(objectNameFromUrl);
     }
   }, [objectNameFromUrl]);
+  
+  React.useEffect(() => {
+    if (statusFromUrl) {
+      setStatusFilter(statusFromUrl);
+    }
+  }, [statusFromUrl]);
+
 
   const table = useReactTable({
     data: devices,
@@ -285,7 +340,7 @@ function DevicesPageContent() {
     <div className="space-y-4">
        <div className="flex h-auto min-h-16 flex-col items-start gap-4 rounded-md bg-secondary p-4 md:flex-row md:items-center">
         <h1 className="text-lg font-semibold text-secondary-foreground">Устройства</h1>
-        <div className="flex w-full items-center gap-2 md:ml-auto md:w-auto">
+        <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto">
             { isMobile ? 
                 <MobileControls 
                     typeFilter={typeFilter}
@@ -294,6 +349,8 @@ function DevicesPageContent() {
                     setSearchField={setSearchField}
                     searchValue={searchValue}
                     setSearchValue={setSearchValue}
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
                 /> : 
                 <DesktopControls
                     typeFilter={typeFilter}
@@ -302,6 +359,8 @@ function DevicesPageContent() {
                     setSearchField={setSearchField}
                     searchValue={searchValue}
                     setSearchValue={setSearchValue}
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
                 /> 
             }
         </div>

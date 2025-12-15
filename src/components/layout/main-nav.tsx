@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,7 +9,7 @@ import { Button } from '../ui/button';
 import React from 'react';
 
 const mainNavLinks = [
-    { href: '/dashboard', label: 'Дашборд' },
+    { href: '/dashboard', label: 'Панель мониторинга' },
     { href: '/objects', label: 'Объекты' },
     { href: '/devices', label: 'Устройства' },
     { href: '/gateways', label: 'Шлюзы' },
@@ -91,7 +90,7 @@ export function MainNav() {
 
   return (
     <div className="flex items-center gap-6">
-        {isMobile && <MobileNav />}
+        {isMobile ? <MobileNav /> : <div/>}
         <div className={cn(isMobile && "flex-1 justify-center", "flex items-center")}>
           <Logo />
         </div>
