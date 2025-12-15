@@ -9,6 +9,8 @@ const pathTranslations: { [key: string]: string } = {
   dashboard: 'Дашборд',
   devices: 'Устройства',
   objects: 'Объекты',
+  catalogs: 'Справочники',
+  reports: 'Отчеты',
 };
 
 export function Breadcrumbs() {
