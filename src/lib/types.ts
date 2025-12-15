@@ -3,6 +3,8 @@ export type BeliotObject = {
     name: string;
     address: string;
     deviceCount: number;
+    parentId?: number | null;
+    children?: BeliotObject[];
 }
 
 export type Device = {
