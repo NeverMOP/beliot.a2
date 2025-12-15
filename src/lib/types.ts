@@ -13,6 +13,13 @@ export type DeviceAttribute = {
     value: string;
 }
 
+export type User = {
+    id: number;
+    email: string;
+    full_name: string;
+    role: 'admin' | 'user' | 'viewer';
+}
+
 export type Device = {
   id: number;
   external_id: string;

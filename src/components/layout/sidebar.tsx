@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, CircuitBoard, Building, Hexagon, Settings, FileText } from 'lucide-react';
+import { LayoutDashboard, CircuitBoard, Building, Hexagon, Settings, FileText, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -71,6 +71,18 @@ export function AppSidebar() {
               <Link href="/reports">
                 <FileText />
                 <span>Отчеты</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith('/users')}
+              tooltip="Пользователи"
+            >
+              <Link href="/users">
+                <Users />
+                <span>Пользователи</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

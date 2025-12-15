@@ -1,4 +1,4 @@
-import { type Device, type Reading, type BeliotObject } from './types';
+import { type Device, type Reading, type BeliotObject, type User } from './types';
 
 export const objects: BeliotObject[] = [
   { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 1, objectType: 'residential' },
@@ -8,6 +8,12 @@ export const objects: BeliotObject[] = [
   { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 1, objectType: 'kindergarten' },
   { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 1, objectType: 'warehouse' },
 ]
+
+export const users: User[] = [
+    { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
+    { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user' },
+    { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer' },
+];
 
 export function getObjectsTree(): BeliotObject[] {
   const objectsById = new Map(objects.map(obj => [obj.id, { ...obj, children: [] as BeliotObject[] }]));
