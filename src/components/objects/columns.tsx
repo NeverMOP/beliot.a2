@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, ChevronsRight, Eye, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
 import { EditForm } from "../shared/edit-form"
+import { cn } from "@/lib/utils"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
     residential: 'Жилой дом',
@@ -48,7 +49,7 @@ const DeviceStatusSummary = ({ row }: { row: any }) => {
     )
 }
 
-export const columns: ColumnDef<BeliotObject>[] = [
+export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>[] => [
   {
     accessorKey: "name",
     header: "Название",
@@ -56,12 +57,19 @@ export const columns: ColumnDef<BeliotObject>[] = [
         const canExpand = row.getCanExpand();
         const isExpanded = row.getIsExpanded();
         return (
-            <div style={{ paddingLeft: `${row.depth * 1.5}rem` }} className="flex items-center gap-1">
+            <div 
+                style={{ paddingLeft: `${row.depth * 1.5}rem` }} 
+                className="flex items-center gap-1 cursor-pointer"
+                onClick={() => onRowClick(row)}
+            >
                 {canExpand && (
                      <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => row.toggleExpanded()}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            row.toggleExpanded();
+                        }}
                         className="h-6 w-6"
                     >
                         <ChevronsRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
@@ -75,19 +83,28 @@ export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "address",
     header: "Адрес",
+     cell: ({ row, getValue }) => (
+        <div onClick={() => onRowClick(row)} className="cursor-pointer">
+            {getValue<string>()}
+        </div>
+    )
   },
   {
     accessorKey: "objectType",
     header: "Тип объекта",
     cell: ({ row }) => {
       const type = row.getValue("objectType") as BeliotObject['objectType'];
-      return <span>{objectTypeRussian[type]}</span>
+      return <div onClick={() => onRowClick(row)} className="cursor-pointer">
+        <span>{objectTypeRussian[type]}</span>
+      </div>
     }
   },
   {
     accessorKey: "deviceCount",
     header: "Устройства",
-    cell: ({ row }) => <DeviceStatusSummary row={row} />
+    cell: ({ row }) => <div onClick={() => onRowClick(row)} className="cursor-pointer">
+        <DeviceStatusSummary row={row} />
+    </div>
   },
   {
     id: "actions",
@@ -98,7 +115,7 @@ export const columns: ColumnDef<BeliotObject>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
               <span className="sr-only">Открыть меню</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -108,7 +125,7 @@ export const columns: ColumnDef<BeliotObject>[] = [
              <DropdownMenuItem asChild>
                 <Link href={`/devices?object_name=${encodeURIComponent(object.name)}`}>
                     <Eye className="mr-2 h-4 w-4" />
-                    Посмотреть устройства
+                    Посмотреть все устройства
                 </Link>
             </DropdownMenuItem>
              <EditForm

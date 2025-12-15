@@ -1,13 +1,11 @@
 'use client'
 
-import { getObjectsTree } from "@/lib/data";
+import { getObjectsTree, devices } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
-import { columns } from "@/components/objects/columns";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import Image from "next/image";
+import { columns as objectColumns } from "@/components/objects/columns";
 import { CreateObjectForm } from "@/components/objects/create-object-form";
 import * as React from 'react';
-import { type BeliotObject } from "@/lib/types";
+import { type BeliotObject, type Device } from "@/lib/types";
 import { 
     getCoreRowModel,
     getPaginationRowModel,
@@ -16,14 +14,22 @@ import {
     type ExpandedState,
     useReactTable,
 } from '@tanstack/react-table';
+import { ObjectDeviceList } from "@/components/objects/object-device-list";
 
 export default function ObjectsPage() {
     const [data, setData] = React.useState<BeliotObject[]>([]);
-    const [expanded, setExpanded] = React.useState<ExpandedState>({})
+    const [expanded, setExpanded] = React.useState<ExpandedState>({});
+    const [selectedObject, setSelectedObject] = React.useState<BeliotObject | null>(null);
 
     React.useEffect(() => {
         setData(getObjectsTree());
     }, []);
+
+    const handleRowClick = (row: any) => {
+        setSelectedObject(row.original);
+    };
+
+    const columns = React.useMemo(() => objectColumns(handleRowClick), []);
 
     const table = useReactTable({
         data,
@@ -52,22 +58,10 @@ export default function ObjectsPage() {
            <DataTable columns={columns} data={data} table={table} />
         </div>
         <div>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Карта объектов</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="relative aspect-video w-full">
-                        <Image 
-                            src="https://picsum.photos/seed/map/1200/800" 
-                            alt="Карта объектов" 
-                            fill
-                            className="rounded-md object-cover"
-                            data-ai-hint="world map"
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+            <ObjectDeviceList 
+                selectedObject={selectedObject} 
+                devices={devices.filter(d => d.objectId === selectedObject?.id)} 
+            />
         </div>
       </div>
     </div>
