@@ -15,7 +15,14 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
+    <Sidebar 
+        collapsible="icon"
+        style={
+            {
+                '--sidebar-width': '17rem',
+            } as React.CSSProperties
+        }
+    >
       <SidebarHeader>
         <div className="flex h-14 items-center gap-2 px-4 py-2">
           <Hexagon className="h-8 w-8 text-sidebar-primary" />
