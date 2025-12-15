@@ -1,22 +1,16 @@
 import { type Device, type Reading, type BeliotObject, type User } from './types';
 
-export const initialObjects: BeliotObject[] = [
+export let initialObjects: BeliotObject[] = [
   { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 0, objectType: 'residential' },
   { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 0, objectType: 'heating_point', parentId: 1 },
   { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 0, objectType: 'business_center' },
   { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 0, objectType: 'school' },
   { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 0, objectType: 'kindergarten', parentId: 4 },
   { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 0, objectType: 'warehouse' },
-  { id: 8, name: 'Дом на 80 квартир', address: 'ул. Новоселов, д. 42', deviceCount: 0, objectType: 'residential' },
+  { id: 8, name: 'Большой дом', address: 'ул. Строителей, д. 100', deviceCount: 0, objectType: 'residential' },
 ];
 
-export const users: User[] = [
-    { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
-    { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user' },
-    { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer' },
-];
-
-export const devices: Device[] = [
+export let devices: Device[] = [
   {
     id: 1,
     external_id: '8A3B4C5D6E7F8G9H',
@@ -143,164 +137,93 @@ export const devices: Device[] = [
     objectId: 1,
     is_gateway: false,
   },
-  // --- New devices for "Дом на 80 квартир" ---
-  // Квартира 1
-  {
-    id: 101,
-    external_id: 'NOV-42-1-W1',
-    serial_number: 'SN-HW-101',
-    type: 'water',
-    model: 'AquaFlow-500',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 1',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:00:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  {
-    id: 102,
-    external_id: 'NOV-42-1-W2',
-    serial_number: 'SN-CW-102',
-    type: 'water',
-    model: 'AquaFlow-500',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 1',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:00:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  {
-    id: 103,
-    external_id: 'NOV-42-1-H1',
-    serial_number: 'SN-HT-103',
-    type: 'heat',
-    model: 'WarmEx-200',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 1',
-    object_name: 'Дом на 80 квартир',
-    status: 'offline',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:00:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  // Квартира 2
-  {
-    id: 104,
-    external_id: 'NOV-42-2-W1',
-    serial_number: 'SN-HW-104',
-    type: 'water',
-    model: 'AquaFlow-500',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 2',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:01:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  {
-    id: 105,
-    external_id: 'NOV-42-2-W2',
-    serial_number: 'SN-CW-105',
-    type: 'water',
-    model: 'AquaFlow-500',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 2',
-    object_name: 'Дом на 80 квартир',
-    status: 'warning',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:01:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  {
-    id: 106,
-    external_id: 'NOV-42-2-H1',
-    serial_number: 'SN-HT-106',
-    type: 'heat',
-    model: 'WarmEx-200',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 2',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:01:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  // Квартира 3
-  {
-    id: 107,
-    external_id: 'NOV-42-3-W1',
-    serial_number: 'SN-HW-107',
-    type: 'water',
-    model: 'AquaFlow-500',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 3',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:02:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  {
-    id: 108,
-    external_id: 'NOV-42-3-W2',
-    serial_number: 'SN-CW-108',
-    type: 'water',
-    model: 'AquaFlow-500',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 3',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:02:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
-  {
-    id: 109,
-    external_id: 'NOV-42-3-H1',
-    serial_number: 'SN-HT-109',
-    type: 'heat',
-    model: 'WarmEx-300',
-    channel_type: 'lora',
-    address: 'ул. Новоселов, д. 42, кв. 3',
-    object_name: 'Дом на 80 квартир',
-    status: 'online',
-    unit_volume: 'м³',
-    unit_energy: 'ГДж',
-    unit_temperature: '°C',
-    created_at: '2024-07-01T10:02:00Z',
-    objectId: 8,
-    is_gateway: false,
-  },
 ];
+
+export const users: User[] = [
+    { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
+    { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user' },
+    { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer' },
+];
+
+// --- Generation for the large apartment building ---
+const bigHouseId = 8;
+const bigHouse = initialObjects.find(o => o.id === bigHouseId)!;
+let objectIdCounter = 100;
+let deviceIdCounter = 1000;
+
+for (let i = 1; i <= 80; i++) {
+    const apartmentId = objectIdCounter++;
+    const apartmentObject: BeliotObject = {
+        id: apartmentId,
+        name: `Квартира ${i}`,
+        address: `${bigHouse.address}, кв. ${i}`,
+        deviceCount: 3,
+        objectType: 'residential',
+        parentId: bigHouseId
+    };
+    initialObjects.push(apartmentObject);
+
+    const statuses: Device['status'][] = ['online', 'offline', 'warning'];
+    const randomStatus = () => statuses[Math.floor(Math.random() * statuses.length)];
+
+    // Device 1: Water (Hot)
+    devices.push({
+        id: deviceIdCounter++,
+        external_id: `BD-APT${i}-W1`,
+        serial_number: `SN-W1-${1000 + i}`,
+        type: 'water',
+        model: 'AquaFlow-500',
+        channel_type: 'lora',
+        address: apartmentObject.address,
+        object_name: apartmentObject.name,
+        status: randomStatus(),
+        unit_volume: 'м³',
+        unit_energy: 'ГДж',
+        unit_temperature: '°C',
+        created_at: '2024-07-10T10:00:00Z',
+        objectId: apartmentId,
+        is_gateway: false
+    });
+
+    // Device 2: Water (Cold)
+    devices.push({
+        id: deviceIdCounter++,
+        external_id: `BD-APT${i}-W2`,
+        serial_number: `SN-W2-${2000 + i}`,
+        type: 'water',
+        model: 'AquaFlow-500',
+        channel_type: 'lora',
+        address: apartmentObject.address,
+        object_name: apartmentObject.name,
+        status: randomStatus(),
+        unit_volume: 'м³',
+        unit_energy: 'ГДж',
+        unit_temperature: '°C',
+        created_at: '2024-07-10T10:00:00Z',
+        objectId: apartmentId,
+        is_gateway: false
+    });
+
+    // Device 3: Heat
+    devices.push({
+        id: deviceIdCounter++,
+        external_id: `BD-APT${i}-H1`,
+        serial_number: `SN-H1-${3000 + i}`,
+        type: 'heat',
+        model: 'WarmEx-200',
+        channel_type: 'lora',
+        address: apartmentObject.address,
+        object_name: apartmentObject.name,
+        status: randomStatus(),
+        unit_volume: 'м³',
+        unit_energy: 'ГДж',
+        unit_temperature: '°C',
+        created_at: '2024-07-10T10:00:00Z',
+        objectId: apartmentId,
+        is_gateway: false
+    });
+}
+
 
 // Function to calculate device counts for each object
 const calculateObjectDeviceCounts = (): BeliotObject[] => {
@@ -346,24 +269,21 @@ export function getObjectsTree(): BeliotObject[] {
 
   objects.forEach(obj => {
     const current = objectsById.get(obj.id)!;
-    if (obj.parentId) {
-      const parent = objectsById.get(obj.parentId);
-      if (parent) {
-        parent.children.push(current);
-        // Aggregate counts up to the parent
-        parent.deviceCount += current.deviceCount;
-        parent.onlineCount! += current.onlineCount!;
-        parent.offlineCount! += current.offlineCount!;
-        parent.warningCount! += current.warningCount!;
-      } else {
-        roots.push(current);
-      }
+    if (obj.parentId && objectsById.has(obj.parentId)) {
+      const parent = objectsById.get(obj.parentId)!;
+      parent.children.push(current);
+
+      // Aggregate counts up to the parent
+      parent.deviceCount += current.deviceCount;
+      parent.onlineCount! += current.onlineCount!;
+      parent.offlineCount! += current.offlineCount!;
+      parent.warningCount! += current.warningCount!;
+
     } else {
       roots.push(current);
     }
   });
 
-  // This filtering step ensures we only return top-level objects
   return roots.filter(obj => !obj.parentId || !objectsById.has(obj.parentId));
 }
 
