@@ -7,8 +7,43 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, GitBranch } from "lucide-react"
 import Link from "next/link"
-import { useIsMobile } from "@/hooks/use-mobile";
 import { EditForm } from "../shared/edit-form";
+
+
+const ActionsCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+    return (
+        <>
+            <EditForm
+                entity={device}
+                entityName="gateway"
+                isOpen={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Открыть меню</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/devices/${device.id}`}>Данные</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        Редактировать
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    )
+}
 
 const getBaseGatewayColumns: () => ColumnDef<Device>[] = () => [
   {
@@ -59,33 +94,7 @@ const getBaseGatewayColumns: () => ColumnDef<Device>[] = () => [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const device = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Открыть меню</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Действия</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link href={`/devices/${device.id}`}>Данные</Link>
-            </DropdownMenuItem>
-             <EditForm entity={device} entityName="gateway">
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                Редактировать
-              </DropdownMenuItem>
-            </EditForm>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ActionsCell
   },
 ];
 

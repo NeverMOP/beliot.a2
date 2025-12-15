@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
+import React from "react";
 import { type ColumnDef, type Row } from "@tanstack/react-table"
 import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, ChevronsRight, Eye, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
 import { EditForm } from "../shared/edit-form"
-import { cn } from "@/lib/utils"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
     residential: 'Жилой дом',
@@ -26,7 +26,8 @@ const DeviceStatusSummary = ({ row }: { row: Row<BeliotObject> }) => {
     if (deviceCount === 0) {
         return <span>{deviceCount}</span>;
     }
-
+    
+    // Always show status icons if there are devices
     return (
         <div className="flex items-center gap-4">
             <span className="font-bold">{deviceCount}</span>
@@ -45,6 +46,44 @@ const DeviceStatusSummary = ({ row }: { row: Row<BeliotObject> }) => {
                 </div>
             </div>
         </div>
+    )
+}
+
+const ActionsCell = ({ row }: { row: any }) => {
+    const object = row.original;
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+    return (
+        <>
+            <EditForm 
+                entity={object} 
+                entityName="object"
+                isOpen={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
+                        <span className="sr-only">Открыть меню</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/devices?object_name=${encodeURIComponent(object.name)}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Посмотреть все устройства
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        Редактировать
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive" disabled>Удалить</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     )
 }
 
@@ -107,35 +146,6 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const object = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
-              <span className="sr-only">Открыть меню</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Действия</DropdownMenuLabel>
-             <DropdownMenuItem asChild>
-                <Link href={`/devices?object_name=${encodeURIComponent(object.name)}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Посмотреть все устройства
-                </Link>
-            </DropdownMenuItem>
-             <EditForm entity={object} entityName="object">
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Редактировать
-                </DropdownMenuItem>
-            </EditForm>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" disabled>Удалить</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ActionsCell,
   },
 ]

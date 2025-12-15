@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -98,11 +97,11 @@ const defaultValues = {
 interface EditFormProps {
   entity: Entity;
   entityName: EntityName;
-  children: React.ReactNode;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function EditForm({ entity, entityName, children }: EditFormProps) {
-  const [open, setOpen] = React.useState(false);
+export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormProps) {
   const { toast } = useToast();
   
   const schema = schemas[entityName];
@@ -110,9 +109,15 @@ export function EditForm({ entity, entityName, children }: EditFormProps) {
   const form = useForm({
     // @ts-ignore
     resolver: zodResolver(schema),
-    // @ts-ignore
-    defaultValues: defaultValues[entityName](entity)
   });
+
+  React.useEffect(() => {
+    if (isOpen) {
+        // @ts-ignore
+        const values = defaultValues[entityName](entity);
+        form.reset(values);
+    }
+  }, [isOpen, entity, entityName, form]);
 
   function onSubmit(data: z.infer<typeof schema>) {
     console.log("Updating entity:", data);
@@ -120,7 +125,7 @@ export function EditForm({ entity, entityName, children }: EditFormProps) {
       title: "Данные обновлены",
       description: `Информация была успешно обновлена.`,
     });
-    setOpen(false);
+    onOpenChange(false);
   }
 
   const renderFormFields = () => {
@@ -231,8 +236,7 @@ export function EditForm({ entity, entityName, children }: EditFormProps) {
 
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Редактировать {entityName}</DialogTitle>
@@ -244,7 +248,7 @@ export function EditForm({ entity, entityName, children }: EditFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             {renderFormFields()}
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Отмена</Button>
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Отмена</Button>
               <Button type="submit">Сохранить</Button>
             </DialogFooter>
           </form>

@@ -9,6 +9,7 @@ import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer, GitBranch } from "l
 import Link from "next/link"
 import { getReadingsForDevice } from "@/lib/data"
 import { EditForm } from "../shared/edit-form"
+import React from "react"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -30,6 +31,44 @@ const statusRussian: Record<string, string> = {
 const typeRussian: Record<string, string> = {
     water: 'Вода',
     heat: 'Тепло'
+}
+
+const ActionsCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+    return (
+        <>
+            <EditForm 
+                entity={device} 
+                entityName="device"
+                isOpen={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Открыть меню</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/devices/${device.id}`}>Данные</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/devices/${device.id}/logs`}>Логи</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        Редактировать
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    )
 }
 
 export const columns: ColumnDef<Device>[] = [
@@ -127,35 +166,6 @@ export const columns: ColumnDef<Device>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const device = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Открыть меню</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Действия</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link href={`/devices/${device.id}`}>Данные</Link>
-            </DropdownMenuItem>
-             <DropdownMenuItem asChild>
-              <Link href={`/devices/${device.id}/logs`}>Логи</Link>
-            </DropdownMenuItem>
-            <EditForm entity={device} entityName="device">
-               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                Редактировать
-              </DropdownMenuItem>
-            </EditForm>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ActionsCell,
   },
 ]
