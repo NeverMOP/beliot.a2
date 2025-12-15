@@ -1,7 +1,7 @@
 import { type Device } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Battery, Rss, Signal, Clock, FileText, MapPin, Hash, Package } from 'lucide-react';
+import { Battery, Rss, Signal, Clock, Hash, Package, GripVertical } from 'lucide-react';
 import { getReadingsForDevice } from '@/lib/data';
 
 const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" | "destructive" | "secondary" => {
@@ -49,8 +49,12 @@ export function DeviceInfo({ device }: { device: Device }) {
             </>
         )}
         <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-muted-foreground"><Hash size={16} />External ID</span>
+            <span className="flex items-center gap-2 text-muted-foreground"><Hash size={16} />Идентификатор (DevEUI/IMEI)</span>
             <span className="font-mono text-xs">{device.external_id}</span>
+        </div>
+        <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-muted-foreground"><GripVertical size={16} />Серийный номер</span>
+            <span className="font-mono text-xs">{device.serial_number}</span>
         </div>
         <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-muted-foreground"><Package size={16} />Модель</span>
@@ -59,10 +63,6 @@ export function DeviceInfo({ device }: { device: Device }) {
         <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-muted-foreground"><Signal size={16} />Канал</span>
             <span className="capitalize">{device.channel_type}</span>
-        </div>
-        <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-muted-foreground"><MapPin size={16} />Адрес</span>
-            <span>{device.address}</span>
         </div>
         <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-muted-foreground"><Clock size={16} />Создан</span>

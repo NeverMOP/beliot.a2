@@ -36,7 +36,8 @@ import { PlusCircle } from "lucide-react";
 import { deviceModels, channelTypes } from "@/lib/catalogs";
 
 const deviceSchema = z.object({
-  external_id: z.string().min(1, "External ID обязателен"),
+  external_id: z.string().min(1, "Идентификатор обязателен"),
+  serial_number: z.string().min(1, "Серийный номер обязателен"),
   type: z.enum(["water", "heat"]),
   model: z.string().min(1, "Модель обязательна"),
   channel_type: z.string().min(1, "Тип канала обязателен"),
@@ -89,9 +90,22 @@ export function CreateDeviceForm() {
               name="external_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>External ID</FormLabel>
+                  <FormLabel>Идентификатор (DevEUI/IMEI)</FormLabel>
                   <FormControl>
                     <Input placeholder="8A3B4C5D6E7F8G9H" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="serial_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Серийный номер</FormLabel>
+                  <FormControl>
+                    <Input placeholder="SN-001-A" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

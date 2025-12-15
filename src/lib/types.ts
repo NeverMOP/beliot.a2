@@ -11,6 +11,7 @@ export type BeliotObject = {
 export type Device = {
   id: number;
   external_id: string;
+  serial_number: string;
   type: 'water' | 'heat';
   model: string;
   channel_type: 'lora' | 'nbiot' | 'rs485';

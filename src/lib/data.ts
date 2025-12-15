@@ -34,6 +34,7 @@ export const devices: Device[] = [
   {
     id: 1,
     external_id: '8A3B4C5D6E7F8G9H',
+    serial_number: 'SN-001-A',
     type: 'water',
     model: 'RSVU-1400',
     channel_type: 'lora',
@@ -49,6 +50,7 @@ export const devices: Device[] = [
   {
     id: 2,
     external_id: '9H8G7F6E5D4C3B2A',
+    serial_number: 'SN-002-B',
     type: 'heat',
     model: 'WarmEx-200',
     channel_type: 'nbiot',
@@ -64,6 +66,7 @@ export const devices: Device[] = [
   {
     id: 3,
     external_id: '1A2B3C4D5E6F7G8H',
+    serial_number: 'SN-003-C',
     type: 'water',
     model: 'AquaFlow-500',
     channel_type: 'rs485',
@@ -79,6 +82,7 @@ export const devices: Device[] = [
   {
     id: 4,
     external_id: 'ABC123DEF456GHI7',
+    serial_number: 'SN-004-D',
     type: 'heat',
     model: 'Thermo-9',
     channel_type: 'lora',
@@ -94,6 +98,7 @@ export const devices: Device[] = [
   {
     id: 5,
     external_id: 'ZYX987WVU654TSR3',
+    serial_number: 'SN-005-E',
     type: 'water',
     model: 'RSVU-1400',
     channel_type: 'nbiot',
@@ -109,6 +114,7 @@ export const devices: Device[] = [
   {
     id: 6,
     external_id: 'LORAWAN-DEVICE-001',
+    serial_number: 'SN-006-F',
     type: 'heat',
     model: 'WarmEx-300',
     channel_type: 'lora',

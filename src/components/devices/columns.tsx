@@ -35,6 +35,10 @@ const typeRussian: Record<string, string> = {
 
 export const columns: ColumnDef<Device>[] = [
   {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
     accessorKey: "type",
     header: ({ column }) => {
       return (
@@ -58,7 +62,11 @@ export const columns: ColumnDef<Device>[] = [
   },
   {
     accessorKey: "external_id",
-    header: "External ID",
+    header: "Идентификатор (DevEUI/IMEI)",
+  },
+  {
+    accessorKey: "serial_number",
+    header: "Серийный номер",
   },
   {
     accessorKey: "object_name",
@@ -68,7 +76,7 @@ export const columns: ColumnDef<Device>[] = [
     accessorKey: "address",
     header: "Адрес",
   },
-    {
+  {
     id: "latest_data",
     header: "Последние данные",
     cell: ({ row }) => {
@@ -100,6 +108,13 @@ export const columns: ColumnDef<Device>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as Device['status'];
       return <Badge variant={getStatusVariant(status)} className="capitalize">{statusRussian[status]}</Badge>
+    }
+  },
+  {
+    accessorKey: "created_at",
+    header: "Дата создания",
+    cell: ({row}) => {
+        return new Date(row.original.created_at).toLocaleDateString()
     }
   },
   {
