@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { type ColumnDef } from "@tanstack/react-table"
 import { type Device } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +27,44 @@ const statusRussian: Record<string, string> = {
     offline: 'Офлайн',
     warning: 'Предупреждение'
 }
+
+const ActionsCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+    return (
+        <>
+            <EditForm
+                entity={device}
+                entityName="device"
+                isOpen={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Открыть меню</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/devices/${device.id}`}>Данные</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/devices/${device.id}/logs`}>Логи</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        Редактировать
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    );
+};
 
 export const objectDeviceListColumns: ColumnDef<Device>[] = [
   {
@@ -83,35 +122,6 @@ export const objectDeviceListColumns: ColumnDef<Device>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const device = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Открыть меню</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Действия</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link href={`/devices/${device.id}`}>Данные</Link>
-            </DropdownMenuItem>
-             <DropdownMenuItem asChild>
-              <Link href={`/devices/${device.id}/logs`}>Логи</Link>
-            </DropdownMenuItem>
-            <EditForm entity={device} entityName="device">
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                Редактировать
-              </DropdownMenuItem>
-            </EditForm>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ActionsCell,
   },
 ]
