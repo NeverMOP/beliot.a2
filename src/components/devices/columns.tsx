@@ -104,6 +104,7 @@ export const columns: ColumnDef<Device>[] = [
   },
   {
     id: "actions",
+    enableHiding: false,
     cell: ({ row }) => {
       const device = row.original
  

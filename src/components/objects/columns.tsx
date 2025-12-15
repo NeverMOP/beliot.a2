@@ -32,6 +32,7 @@ export const columns: ColumnDef<BeliotObject>[] = [
   },
   {
     id: "actions",
+    enableHiding: false,
     cell: ({ row }) => {
       const object = row.original
  

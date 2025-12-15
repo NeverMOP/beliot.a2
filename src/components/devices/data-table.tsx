@@ -24,6 +24,15 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "../ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Settings } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -54,7 +63,7 @@ export function DataTable<TData, TValue>({
     },
   })
 
-  const filterColumn = table.getColumn("object_name") || table.getColumn("name");
+  const filterColumn = table.getColumn("object_name") ?? table.getColumn("name");
 
   return (
     <Card>
@@ -69,6 +78,35 @@ export function DataTable<TData, TValue>({
               className="max-w-sm"
             />
         )}
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Колонки
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+                {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                    return (
+                    <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                        }
+                    >
+                        {typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}
+                    </DropdownMenuCheckboxItem>
+                    )
+                })}
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="relative">
         <Table>
