@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { devices } from '@/lib/data';
 import { DataTable } from '@/components/devices/data-table';
-import { useColumns } from '@/components/devices/columns';
+import { columns } from '@/components/devices/columns';
 import { CreateDeviceForm } from '@/components/devices/create-device-form';
 import { Button } from '@/components/ui/button';
 import { type Device } from '@/lib/types';
@@ -17,7 +17,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search } from 'lucide-react';
-import { type ColumnFiltersState } from '@tanstack/react-table';
+import { 
+    type ColumnFiltersState, 
+    type SortingState,
+    type VisibilityState,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    getFacetedRowModel,
+    getFacetedUniqueValues,
+    useReactTable,
+} from '@tanstack/react-table';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -174,6 +185,35 @@ function MobileControls({
     )
 }
 
+const DESKTOP_COLUMN_VISIBILITY: VisibilityState = {
+    id: true,
+    type: true,
+    external_id: true,
+    serial_number: true,
+    object_name: true,
+    address: true,
+    latest_data: true,
+    is_gateway: true,
+    status: true,
+    created_at: true,
+    actions: true,
+}
+
+const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
+    id: false,
+    type: false,
+    external_id: false,
+    serial_number: true,
+    object_name: false,
+    address: false,
+    latest_data: true,
+    is_gateway: false,
+    status: true,
+    created_at: false,
+    actions: true,
+}
+
+
 export default function DevicesPage() {
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>(
     'all'
@@ -181,6 +221,17 @@ export default function DevicesPage() {
    const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
    const [searchValue, setSearchValue] = React.useState('');
    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+   const isMobile = useIsMobile();
+
+   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
+       isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY
+   );
+
+    React.useEffect(() => {
+        setColumnVisibility(isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY);
+    }, [isMobile]);
 
   React.useEffect(() => {
     const newColumnFilters: ColumnFiltersState = [];
@@ -193,8 +244,25 @@ export default function DevicesPage() {
     setColumnFilters(newColumnFilters);
   }, [typeFilter, searchField, searchValue]);
 
-  const isMobile = useIsMobile();
-  const columns = useColumns();
+
+  const table = useReactTable({
+    data: devices,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+    },
+  });
 
 
   return (
@@ -222,7 +290,7 @@ export default function DevicesPage() {
             }
         </div>
       </div>
-      <DataTable columns={columns} data={devices} columnFilters={columnFilters} setColumnFilters={setColumnFilters} />
+      <DataTable columns={columns} data={devices} table={table} />
     </div>
   );
 }

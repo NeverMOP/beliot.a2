@@ -5,6 +5,7 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -13,7 +14,6 @@ import {
   useReactTable,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  type VisibilityState
 } from "@tanstack/react-table"
 
 import {
@@ -49,62 +49,16 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
   columnFilters?: ColumnFiltersState,
-  setColumnFilters?: React.Dispatch<React.SetStateAction<ColumnFiltersState>>
+  setColumnFilters?: React.Dispatch<React.SetStateAction<ColumnFiltersState>>,
+  table: ReturnType<typeof useReactTable<TData>>,
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  columnFilters = [],
-  setColumnFilters,
+  table
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
   const isMobile = useIsMobile();
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    onColumnVisibilityChange: setColumnVisibility,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-  })
-
-  React.useEffect(() => {
-    if (isMobile) {
-      const mobileColumns: Record<string, boolean> = {};
-      columns.forEach((col: any) => {
-        const key = col.accessorKey || col.id;
-        if (['serial_number', 'latest_data', 'status', 'actions'].includes(key)) {
-          mobileColumns[key] = true;
-        } else {
-          mobileColumns[key] = false;
-        }
-      });
-      table.setColumnVisibility(mobileColumns);
-    } else {
-       const desktopColumns: Record<string, boolean> = {};
-       columns.forEach((col: any) => {
-         const key = col.accessorKey || col.id;
-         if (col.enableHiding !== false) {
-          desktopColumns[key] = true;
-         }
-       });
-       table.setColumnVisibility(desktopColumns);
-    }
-  }, [isMobile, columns, table]);
 
   return (
     <Card>

@@ -1,11 +1,29 @@
+'use client'
+
 import { objects } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns } from "@/components/objects/columns";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { CreateObjectForm } from "@/components/objects/create-object-form";
+import * as React from 'react';
+import { 
+    getCoreRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from '@tanstack/react-table';
 
 export default function ObjectsPage() {
+
+    const table = useReactTable({
+        data: objects,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+    });
+
   return (
     <div className="space-y-4">
       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
@@ -16,7 +34,7 @@ export default function ObjectsPage() {
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>
-           <DataTable columns={columns} data={objects} />
+           <DataTable columns={columns} data={objects} table={table} />
         </div>
         <div>
             <Card>

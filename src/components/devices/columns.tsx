@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react";
 import { type ColumnDef } from "@tanstack/react-table"
 import { type Device } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +8,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { getReadingsForDevice } from "@/lib/data"
-import { useIsMobile } from "@/hooks/use-mobile"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -33,11 +31,10 @@ const typeRussian: Record<string, string> = {
     heat: 'Тепло'
 }
 
-const getBaseColumns: () => ColumnDef<Device>[] = () => [
+export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: "id",
     header: "ID",
-    enableHiding: true,
   },
   {
     accessorKey: "type",
@@ -60,27 +57,22 @@ const getBaseColumns: () => ColumnDef<Device>[] = () => [
         <span>{typeRussian[type]}</span>
       </div>
     },
-    enableHiding: true,
   },
   {
     accessorKey: "external_id",
     header: "Идентификатор",
-    enableHiding: true,
   },
   {
     accessorKey: "serial_number",
     header: "Серийный номер",
-    enableHiding: true,
   },
   {
     accessorKey: "object_name",
     header: "Объект",
-    enableHiding: true,
   },
   {
     accessorKey: "address",
     header: "Адрес",
-    enableHiding: true,
   },
   {
     id: "latest_data",
@@ -107,7 +99,6 @@ const getBaseColumns: () => ColumnDef<Device>[] = () => [
 
       return <span>{value} {unit}</span>;
     },
-    enableHiding: true,
   },
   {
     accessorKey: 'is_gateway',
@@ -116,7 +107,6 @@ const getBaseColumns: () => ColumnDef<Device>[] = () => [
         const isGateway = row.getValue('is_gateway');
         return isGateway ? <div className="flex justify-center"><GitBranch className="h-4 w-4 text-[hsl(var(--chart-1))]" /></div> : null;
     },
-    enableHiding: true,
   },
   {
     accessorKey: "status",
@@ -125,7 +115,6 @@ const getBaseColumns: () => ColumnDef<Device>[] = () => [
       const status = row.getValue("status") as Device['status'];
       return <Badge className={`capitalize ${getStatusClass(status)}`}>{statusRussian[status]}</Badge>
     },
-    enableHiding: true,
   },
   {
     accessorKey: "created_at",
@@ -133,7 +122,6 @@ const getBaseColumns: () => ColumnDef<Device>[] = () => [
     cell: ({row}) => {
         return new Date(row.original.created_at).toLocaleDateString()
     },
-    enableHiding: true,
   },
   {
     id: "actions",
@@ -163,15 +151,3 @@ const getBaseColumns: () => ColumnDef<Device>[] = () => [
     },
   },
 ]
-
-export const useColumns = (): ColumnDef<Device>[] => {
-  const isMobile = useIsMobile();
-
-  const columns = React.useMemo(() => getBaseColumns(), []);
-
-  React.useEffect(() => {
-    // This is a side effect of the hook and should be handled by the component using the hook
-  }, [isMobile]);
-
-  return columns;
-};
