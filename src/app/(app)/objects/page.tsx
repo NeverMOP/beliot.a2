@@ -3,11 +3,15 @@ import { DataTable } from "@/components/devices/data-table";
 import { columns } from "@/components/objects/columns";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
+import { CreateObjectForm } from "@/components/objects/create-object-form";
 
 export default function ObjectsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="font-headline text-3xl font-bold tracking-tight">Объекты</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-headline text-3xl font-bold tracking-tight">Объекты</h1>
+        <CreateObjectForm />
+      </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>
            <DataTable columns={columns} data={objects} />
