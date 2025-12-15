@@ -4,9 +4,11 @@ import { type ColumnDef } from "@tanstack/react-table"
 import { type Device } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Droplets, Thermometer } from "lucide-react"
 import Link from "next/link"
 import { getReadingsForDevice } from "@/lib/data"
+import { EditForm } from "../shared/edit-form"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -85,12 +87,30 @@ export const objectDeviceListColumns: ColumnDef<Device>[] = [
       const device = row.original
  
       return (
-        <Button variant="ghost" asChild className="h-8 w-8 p-0">
-            <Link href={`/devices/${device.id}`}>
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">К устройству</span>
-            </Link>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Открыть меню</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Действия</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href={`/devices/${device.id}`}>Данные</Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href={`/devices/${device.id}/logs`}>Логи</Link>
+            </DropdownMenuItem>
+            <EditForm
+                entity={device}
+                entityName="device"
+                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
+            />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
   },
