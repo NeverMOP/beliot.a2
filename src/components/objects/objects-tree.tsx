@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import DataGrid, {
+import { default as DataGrid,
   type Column,
   type RenderRowProps,
   type RowsChangeData,
