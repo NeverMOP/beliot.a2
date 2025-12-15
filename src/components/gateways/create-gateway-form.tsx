@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
-import { deviceModels, channelTypes } from "@/lib/catalogs";
+import { gatewayModels, channelTypes } from "@/lib/catalogs";
 
 const gatewaySchema = z.object({
   external_id: z.string().min(1, "Идентификатор обязателен"),
@@ -57,7 +57,7 @@ export function CreateGatewayForm() {
   });
 
   function onSubmit(data: GatewayFormValues) {
-    console.log("Creating gateway:", { ...data, is_gateway: true });
+    console.log("Creating gateway:", { ...data, is_gateway: true, type: 'heat' }); // type is irrelevant for gateway but needed for Device type
     // Here you would typically call an API to create the gateway
     toast({
       title: "Шлюз создан",
@@ -123,7 +123,7 @@ export function CreateGatewayForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {deviceModels.map((model) => (
+                        {gatewayModels.map((model) => (
                             <SelectItem key={model} value={model}>{model}</SelectItem>
                         ))}
                       </SelectContent>

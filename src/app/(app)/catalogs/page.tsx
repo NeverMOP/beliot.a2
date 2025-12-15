@@ -1,5 +1,5 @@
 import { CatalogCard } from '@/components/catalogs/catalog-card';
-import { deviceModels, channelTypes } from '@/lib/catalogs';
+import { deviceModels, channelTypes, gatewayModels } from '@/lib/catalogs';
 
 export default function CatalogsPage() {
   return (
@@ -11,7 +11,7 @@ export default function CatalogsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <CatalogCard
           title="Модели устройств"
           description="Управление списком доступных моделей устройств."
@@ -20,6 +20,15 @@ export default function CatalogsPage() {
           dialogTitle="Добавить новую модель"
           dialogDescription="Введите название новой модели устройства."
           dialogInputPlaceholder="например, UltraHeat-3000"
+        />
+         <CatalogCard
+          title="Модели шлюзов"
+          description="Управление списком доступных моделей шлюзов."
+          items={gatewayModels}
+          itemName="модель шлюза"
+          dialogTitle="Добавить новую модель шлюза"
+          dialogDescription="Введите название новой модели шлюза."
+          dialogInputPlaceholder="например, Beliot Gateway v3"
         />
         <CatalogCard
           title="Типы каналов связи"

@@ -8,8 +8,15 @@ export const deviceModels: string[] = [
     "WarmEx-300"
 ];
 
+export const gatewayModels: string[] = [
+    "Beliot Gateway v1",
+    "Beliot Gateway v2",
+    "LoRaMaster-3000"
+];
+
 export const channelTypes: string[] = [
     "lora",
     "nbiot",
-    "rs485"
+    "rs485",
+    "gsm"
 ];
