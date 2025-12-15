@@ -14,7 +14,7 @@ import {
 } from '@tanstack/react-table';
 
 export default function GatewaysPage() {
-  const gateways = devices.filter((device) => device.is_gateway);
+  const gateways = React.useMemo(() => devices.filter((device) => device.is_gateway), []);
   const columns = useGatewayColumns();
 
   const table = useReactTable({
@@ -23,6 +23,11 @@ export default function GatewaysPage() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+        pagination: {
+            pageSize: 10,
+        }
+    }
   });
 
   return (

@@ -143,6 +143,9 @@ export const columns: ColumnDef<Device>[] = [
             <DropdownMenuItem asChild>
               <Link href={`/devices/${device.id}`}>Данные</Link>
             </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href={`/devices/${device.id}/logs`}>Логи</Link>
+            </DropdownMenuItem>
             <EditForm
                 entity={device}
                 entityName="device"
