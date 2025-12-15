@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search } from 'lucide-react';
+import { type ColumnFiltersState } from '@tanstack/react-table';
 
 const searchFields: { value: keyof Device; label: string }[] = [
     { value: 'object_name', label: 'Объект' },
@@ -32,10 +33,10 @@ export default function DevicesPage() {
   );
    const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
    const [searchValue, setSearchValue] = React.useState('');
-   const [columnFilters, setColumnFilters] = React.useState<any[]>([]);
+   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   React.useEffect(() => {
-    const newColumnFilters = [];
+    const newColumnFilters: ColumnFiltersState = [];
     if (typeFilter !== 'all') {
         newColumnFilters.push({ id: 'type', value: typeFilter });
     }
@@ -98,7 +99,7 @@ export default function DevicesPage() {
         </div>
         <CreateDeviceForm />
       </div>
-      <DataTable columns={columns} data={devices} columnFilters={columnFilters} />
+      <DataTable columns={columns} data={devices} columnFilters={columnFilters} setColumnFilters={setColumnFilters} />
     </div>
   );
 }

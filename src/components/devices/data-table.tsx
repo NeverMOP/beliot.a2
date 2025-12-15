@@ -38,23 +38,17 @@ import { Settings } from "lucide-react"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
-  columnFilters?: ColumnFiltersState
+  columnFilters?: ColumnFiltersState,
+  setColumnFilters?: React.Dispatch<React.SetStateAction<ColumnFiltersState>>
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  columnFilters: initialColumnFilters = []
+  columnFilters = [],
+  setColumnFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    initialColumnFilters
-  )
-
-  React.useEffect(() => {
-    setColumnFilters(initialColumnFilters);
-  }, [initialColumnFilters]);
-
 
   const table = useReactTable({
     data,
