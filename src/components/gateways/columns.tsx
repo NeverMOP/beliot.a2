@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { MoreHorizontal, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { useIsMobile } from "@/hooks/use-mobile";
+import { EditForm } from "../shared/edit-form";
 
 const getBaseGatewayColumns: () => ColumnDef<Device>[] = () => [
   {
@@ -74,7 +75,11 @@ const getBaseGatewayColumns: () => ColumnDef<Device>[] = () => [
             <DropdownMenuItem asChild>
               <Link href={`/devices/${device.id}`}>Данные</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Редактировать</DropdownMenuItem>
+             <EditForm
+                entity={device}
+                entityName="gateway"
+                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
+            />
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
           </DropdownMenuContent>

@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { getReadingsForDevice } from "@/lib/data"
+import { EditForm } from "../shared/edit-form"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -142,7 +143,11 @@ export const columns: ColumnDef<Device>[] = [
             <DropdownMenuItem asChild>
               <Link href={`/devices/${device.id}`}>Данные</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Редактировать</DropdownMenuItem>
+            <EditForm
+                entity={device}
+                entityName="device"
+                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
+            />
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
           </DropdownMenuContent>

@@ -6,6 +6,7 @@ import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, ChevronsRight, Eye } from "lucide-react"
+import { EditForm } from "../shared/edit-form"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
     residential: 'Жилой дом',
@@ -80,7 +81,11 @@ export const columns: ColumnDef<BeliotObject>[] = [
                     Посмотреть устройства
                 </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>Редактировать</DropdownMenuItem>
+             <EditForm
+                entity={object}
+                entityName="object"
+                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
+            />
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" disabled>Удалить</DropdownMenuItem>
           </DropdownMenuContent>
