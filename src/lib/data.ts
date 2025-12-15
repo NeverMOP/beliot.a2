@@ -1,15 +1,12 @@
 import { type Device, type Reading, type BeliotObject } from './types';
 
 export const objects: BeliotObject[] = [
-  { id: 100, name: 'Москва', address: 'Россия', deviceCount: 4, parentId: null },
-  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 1, parentId: 100 },
-  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 1, parentId: 100 },
-  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 1, parentId: 100 },
-  { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 1, parentId: 100 },
-  
-  { id: 200, name: 'Санкт-Петербург', address: 'Россия', deviceCount: 2, parentId: null },
-  { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 1, parentId: 200 },
-  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 1, parentId: 200 },
+  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 1 },
+  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 1 },
+  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 1 },
+  { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 1 },
+  { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 1 },
+  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 1 },
 ]
 
 export function getObjectsTree(): BeliotObject[] {
