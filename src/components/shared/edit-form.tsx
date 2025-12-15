@@ -112,7 +112,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
   });
 
   React.useEffect(() => {
-    if (isOpen) {
+    if (isOpen && entity) {
         // @ts-ignore
         const values = defaultValues[entityName](entity);
         form.reset(values);
