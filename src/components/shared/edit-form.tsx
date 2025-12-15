@@ -221,8 +221,8 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                         <FormItem>
                             <FormLabel>Канал</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
-                            <SelectContent>{channelTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
+                                <SelectContent>{channelTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                             <FormMessage />
                         </FormItem>
@@ -239,7 +239,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Редактировать {entityName}</DialogTitle>
+          <DialogTitle>Редактировать</DialogTitle>
           <DialogDescription>
             Измените информацию ниже и нажмите "Сохранить".
           </DialogDescription>
