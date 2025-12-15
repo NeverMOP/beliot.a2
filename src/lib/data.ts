@@ -156,24 +156,31 @@ const generateReadings = (
   const readings: Reading[] = [];
   const now = new Date();
 
+  const pseudoRandom = (seed: number) => {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
   for (let i = 0; i < numReadings; i++) {
     const time = new Date(now.getTime() - i * 60 * 60 * 1000).toISOString(); // one reading per hour
+    const seed = deviceId + i;
+
     const reading: Reading = {
       time,
       device_id: deviceId,
       battery_percent: 80 - i * 0.5,
-      rssi: -70 - Math.floor(Math.random() * 10),
+      rssi: -70 - Math.floor(pseudoRandom(seed + 1) * 10),
       error_flags: 0,
     };
 
     if (deviceType === 'water') {
-      reading.in1 = 1000 + i * 10 + Math.random() * 5;
-      reading.in2 = 800 + i * 8 + Math.random() * 4;
+      reading.in1 = 1000 + i * 10 + pseudoRandom(seed + 2) * 5;
+      reading.in2 = 800 + i * 8 + pseudoRandom(seed + 3) * 4;
       reading.fflow1 = 1.2 + Math.sin(i / 10) * 0.5;
       reading.fflow2 = 1.0 + Math.cos(i / 10) * 0.4;
     } else {
-      reading.energy = 500 + i * 5 + Math.random() * 3;
-      reading.mass1 = 2000 + i * 20 + Math.random() * 10;
+      reading.energy = 500 + i * 5 + pseudoRandom(seed + 4) * 3;
+      reading.mass1 = 2000 + i * 20 + pseudoRandom(seed + 5) * 10;
       reading.temp_supply = 65 + Math.sin(i / 20) * 5;
       reading.temp_return = 55 + Math.cos(i / 20) * 5;
     }
