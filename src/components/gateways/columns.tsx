@@ -75,11 +75,11 @@ const getBaseGatewayColumns: () => ColumnDef<Device>[] = () => [
             <DropdownMenuItem asChild>
               <Link href={`/devices/${device.id}`}>Данные</Link>
             </DropdownMenuItem>
-             <EditForm
-                entity={device}
-                entityName="gateway"
-                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
-            />
+             <EditForm entity={device} entityName="gateway">
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                Редактировать
+              </DropdownMenuItem>
+            </EditForm>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
           </DropdownMenuContent>

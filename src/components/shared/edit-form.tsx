@@ -98,10 +98,10 @@ const defaultValues = {
 interface EditFormProps {
   entity: Entity;
   entityName: EntityName;
-  trigger: React.ReactNode;
+  children: React.ReactNode;
 }
 
-export function EditForm({ entity, entityName, trigger }: EditFormProps) {
+export function EditForm({ entity, entityName, children }: EditFormProps) {
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
   
@@ -232,7 +232,7 @@ export function EditForm({ entity, entityName, trigger }: EditFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Редактировать {entityName}</DialogTitle>

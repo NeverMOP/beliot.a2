@@ -126,11 +126,11 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
                     Посмотреть все устройства
                 </Link>
             </DropdownMenuItem>
-             <EditForm
-                entity={object}
-                entityName="object"
-                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
-            />
+             <EditForm entity={object} entityName="object">
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    Редактировать
+                </DropdownMenuItem>
+            </EditForm>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" disabled>Удалить</DropdownMenuItem>
           </DropdownMenuContent>
