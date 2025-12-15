@@ -55,7 +55,8 @@ export const devices: Device[] = [
     attributes: [
         { name: 'Лицевой счет', value: '100-200-301' },
         { name: 'Дата поверки', value: '2025-10-01' }
-    ]
+    ],
+    is_gateway: false,
   },
   {
     id: 2,
@@ -72,6 +73,7 @@ export const devices: Device[] = [
     unit_temperature: '°C',
     created_at: '2023-02-20T11:00:00Z',
     objectId: 2,
+    is_gateway: true,
   },
   {
     id: 3,
@@ -90,7 +92,8 @@ export const devices: Device[] = [
     objectId: 3,
     attributes: [
         { name: 'Тариф', value: 'Коммерческий' }
-    ]
+    ],
+    is_gateway: false,
   },
   {
     id: 4,
@@ -107,6 +110,7 @@ export const devices: Device[] = [
     unit_temperature: '°C',
     created_at: '2023-04-01T18:45:00Z',
     objectId: 4,
+    is_gateway: false,
   },
   {
     id: 5,
@@ -123,6 +127,7 @@ export const devices: Device[] = [
     unit_temperature: '°C',
     created_at: '2023-05-22T08:00:00Z',
     objectId: 5,
+    is_gateway: false,
   },
   {
     id: 6,
@@ -139,6 +144,7 @@ export const devices: Device[] = [
     unit_temperature: '°C',
     created_at: '2023-06-30T12:00:00Z',
     objectId: 6,
+    is_gateway: true,
   },
 ];
 

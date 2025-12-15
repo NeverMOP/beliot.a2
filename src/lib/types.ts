@@ -36,6 +36,7 @@ export type Device = {
   created_at: string;
   objectId: number;
   attributes?: DeviceAttribute[];
+  is_gateway?: boolean;
 };
 
 export type Reading = {

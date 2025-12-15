@@ -5,7 +5,7 @@ import { type Device } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer, Check, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { getReadingsForDevice } from "@/lib/data"
 
@@ -62,7 +62,7 @@ export const columns: ColumnDef<Device>[] = [
   },
   {
     accessorKey: "external_id",
-    header: "Идентификатор (DevEUI/IMEI)",
+    header: "Идентификатор",
   },
   {
     accessorKey: "serial_number",
@@ -100,6 +100,14 @@ export const columns: ColumnDef<Device>[] = [
       }
 
       return <span>{value} {unit}</span>;
+    }
+  },
+  {
+    accessorKey: 'is_gateway',
+    header: 'Шлюз',
+    cell: ({ row }) => {
+        const isGateway = row.getValue('is_gateway');
+        return isGateway ? <div className="flex justify-center"><GitBranch className="h-4 w-4 text-green-500" /></div> : null;
     }
   },
   {
