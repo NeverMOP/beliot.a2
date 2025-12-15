@@ -1,27 +1,42 @@
 'use client'
 
-import { objects } from "@/lib/data";
+import { getObjectsTree } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns } from "@/components/objects/columns";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { CreateObjectForm } from "@/components/objects/create-object-form";
 import * as React from 'react';
+import { type BeliotObject } from "@/lib/types";
 import { 
     getCoreRowModel,
     getPaginationRowModel,
     getSortedRowModel,
+    getExpandedRowModel,
+    type ExpandedState,
     useReactTable,
 } from '@tanstack/react-table';
 
 export default function ObjectsPage() {
+    const [data, setData] = React.useState<BeliotObject[]>([]);
+    const [expanded, setExpanded] = React.useState<ExpandedState>({})
+
+    React.useEffect(() => {
+        setData(getObjectsTree());
+    }, []);
 
     const table = useReactTable({
-        data: objects,
+        data,
         columns,
+        state: {
+          expanded,
+        },
+        onExpandedChange: setExpanded,
+        getSubRows: row => row.children,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getExpandedRowModel: getExpandedRowModel(),
     });
 
   return (
@@ -34,7 +49,7 @@ export default function ObjectsPage() {
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>
-           <DataTable columns={columns} data={objects} table={table} />
+           <DataTable columns={columns} data={data} table={table} />
         </div>
         <div>
             <Card>

@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
+import { Suspense } from 'react';
 import { devices } from '@/lib/data';
 import { DataTable } from '@/components/devices/data-table';
-import { columns } from '@/components/devices/columns';
+import { columns as allColumns } from '@/components/devices/columns';
 import { CreateDeviceForm } from '@/components/devices/create-device-form';
 import { Button } from '@/components/ui/button';
 import { type Device } from '@/lib/types';
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { Search } from 'lucide-react';
 import { 
+    type ColumnDef,
     type ColumnFiltersState, 
     type SortingState,
     type VisibilityState,
@@ -31,6 +33,7 @@ import {
 } from '@tanstack/react-table';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useSearchParams } from 'next/navigation';
 
 const searchFields: { value: keyof Device; label: string }[] = [
     { value: 'object_name', label: 'Объект' },
@@ -213,37 +216,45 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
     actions: true,
 }
 
+function DevicesPageContent() {
+  const searchParams = useSearchParams();
+  const objectNameFromUrl = searchParams.get('object_name');
+  
+  const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>('all');
+  const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
+  const [searchValue, setSearchValue] = React.useState(objectNameFromUrl || '');
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const isMobile = useIsMobile();
+   
+  const columns = React.useMemo<ColumnDef<Device>[]>(() => allColumns, []);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
-export default function DevicesPage() {
-  const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>(
-    'all'
-  );
-   const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
-   const [searchValue, setSearchValue] = React.useState('');
-   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-   const [sorting, setSorting] = React.useState<SortingState>([]);
-
-   const isMobile = useIsMobile();
-
-   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-       isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY
-   );
-
-    React.useEffect(() => {
-        setColumnVisibility(isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY);
-    }, [isMobile]);
+  React.useEffect(() => {
+    setColumnVisibility(isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY);
+  }, [isMobile]);
 
   React.useEffect(() => {
     const newColumnFilters: ColumnFiltersState = [];
     if (typeFilter !== 'all') {
         newColumnFilters.push({ id: 'type', value: typeFilter });
     }
-    if (searchValue) {
-        newColumnFilters.push({ id: searchField, value: searchValue });
+    
+    // Use initial search value from URL if available
+    const initialSearchValue = objectNameFromUrl || searchValue;
+    if (initialSearchValue) {
+        newColumnFilters.push({ id: searchField, value: initialSearchValue });
     }
-    setColumnFilters(newColumnFilters);
-  }, [typeFilter, searchField, searchValue]);
 
+    setColumnFilters(newColumnFilters);
+  }, [typeFilter, searchField, searchValue, objectNameFromUrl]);
+
+  React.useEffect(() => {
+    if (objectNameFromUrl) {
+      setSearchField('object_name');
+      setSearchValue(objectNameFromUrl);
+    }
+  }, [objectNameFromUrl]);
 
   const table = useReactTable({
     data: devices,
@@ -262,6 +273,11 @@ export default function DevicesPage() {
       columnFilters,
       columnVisibility,
     },
+    initialState: {
+        pagination: {
+            pageSize: isMobile ? 5 : 10,
+        }
+    }
   });
 
 
@@ -293,4 +309,12 @@ export default function DevicesPage() {
       <DataTable columns={columns} data={devices} table={table} />
     </div>
   );
+}
+
+export default function DevicesPage() {
+    return (
+        <Suspense fallback={<div>Загрузка...</div>}>
+            <DevicesPageContent />
+        </Suspense>
+    )
 }

@@ -1,10 +1,11 @@
 "use client"
 
+import Link from "next/link"
 import { type ColumnDef } from "@tanstack/react-table"
 import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, ChevronsRight, Eye } from "lucide-react"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
     residential: 'Жилой дом',
@@ -20,17 +21,26 @@ const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
 export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "name",
-     header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Название
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    header: "Название",
+    cell: ({ row, getValue }) => {
+        const canExpand = row.getCanExpand();
+        const isExpanded = row.getIsExpanded();
+        return (
+            <div style={{ paddingLeft: `${row.depth * 2}rem` }} className="flex items-center gap-2">
+                {canExpand && (
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => row.toggleExpanded()}
+                        className="h-6 w-6"
+                    >
+                        <ChevronsRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    </Button>
+                )}
+                <span>{getValue<string>()}</span>
+            </div>
+        )
+    }
   },
   {
     accessorKey: "address",
@@ -64,10 +74,15 @@ export const columns: ColumnDef<BeliotObject>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Действия</DropdownMenuLabel>
-            <DropdownMenuItem>Посмотреть детали</DropdownMenuItem>
-            <DropdownMenuItem>Редактировать</DropdownMenuItem>
+             <DropdownMenuItem asChild>
+                <Link href={`/devices?object_name=${encodeURIComponent(object.name)}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Посмотреть устройства
+                </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>Редактировать</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" disabled>Удалить</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
