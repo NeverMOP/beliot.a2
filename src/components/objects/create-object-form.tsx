@@ -24,12 +24,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
 
 const objectSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
   address: z.string().min(1, "Адрес обязателен"),
+  objectType: z.enum(['residential', 'business_center', 'mall', 'medical', 'school', 'kindergarten', 'heating_point', 'warehouse']),
 });
 
 type ObjectFormValues = z.infer<typeof objectSchema>;
@@ -42,6 +50,7 @@ export function CreateObjectForm() {
     defaultValues: {
       name: "",
       address: "",
+      objectType: "residential",
     },
   });
 
@@ -99,6 +108,33 @@ export function CreateObjectForm() {
                 </FormItem>
               )}
             />
+            <FormField
+                control={form.control}
+                name="objectType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Тип объекта</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите тип" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="residential">Жилой дом</SelectItem>
+                        <SelectItem value="business_center">Бизнес-центр</SelectItem>
+                        <SelectItem value="mall">Торговый центр</SelectItem>
+                        <SelectItem value="medical">Мед. учреждение</SelectItem>
+                        <SelectItem value="school">Школа</SelectItem>
+                        <SelectItem value="kindergarten">Детский сад</SelectItem>
+                        <SelectItem value="heating_point">Тепловой пункт</SelectItem>
+                        <SelectItem value="warehouse">Склад</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Отмена</Button>
               <Button type="submit">Создать</Button>

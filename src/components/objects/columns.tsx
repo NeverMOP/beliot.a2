@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 
+const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
+    residential: 'Жилой дом',
+    business_center: 'Бизнес-центр',
+    mall: 'Торговый центр',
+    medical: 'Мед. учреждение',
+    school: 'Школа',
+    kindergarten: 'Детский сад',
+    heating_point: 'Тепловой пункт',
+    warehouse: 'Склад',
+}
+
 export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "name",
@@ -24,6 +35,14 @@ export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "address",
     header: "Адрес",
+  },
+  {
+    accessorKey: "objectType",
+    header: "Тип объекта",
+    cell: ({ row }) => {
+      const type = row.getValue("objectType") as BeliotObject['objectType'];
+      return <span>{objectTypeRussian[type]}</span>
+    }
   },
   {
     accessorKey: "deviceCount",

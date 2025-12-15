@@ -2,6 +2,7 @@ export type BeliotObject = {
     id: number;
     name: string;
     address: string;
+    objectType: 'residential' | 'business_center' | 'mall' | 'medical' | 'school' | 'kindergarten' | 'heating_point' | 'warehouse';
     deviceCount: number;
     parentId?: number | null;
     children?: BeliotObject[];
