@@ -225,7 +225,7 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "duration-200 h-svh w-[--sidebar-width] bg-sidebar text-sidebar-foreground transition-[width] ease-linear",
+            "duration-200 h-full w-[--sidebar-width] bg-sidebar text-sidebar-foreground transition-[width] ease-linear",
             "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
             "group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
@@ -253,7 +253,7 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("md:hidden", className)}
+      className={cn("md:flex", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -283,9 +283,11 @@ const SidebarRail = React.forwardRef<
       size="icon"
       onClick={toggleSidebar}
       className={cn(
-        "absolute top-1/2 -translate-y-1/2 z-20 h-8 w-8 hidden md:flex rounded-full bg-background text-foreground border",
+        "fixed top-1/2 -translate-y-1/2 z-20 h-8 w-8 hidden md:flex rounded-full bg-background text-foreground border",
         "hover:bg-accent hover:text-accent-foreground",
-        side === "left" ? "right-0 translate-x-1/2" : "left-0 -translate-x-1/2",
+        "group-data-[state=expanded]:left-[var(--sidebar-width)]",
+        "group-data-[state=collapsed]:left-[var(--sidebar-width-icon)]",
+        "translate-x-[-50%]",
         className
       )}
       {...props}
