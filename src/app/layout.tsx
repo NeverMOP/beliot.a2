@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Beliot Dashboard',
@@ -23,7 +24,16 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <div className="fixed inset-0 z-[-1] opacity-80">
+            <Image
+                src="https://storage.googleapis.com/stedi-assets/belit-background-iot.png"
+                alt="IoT background"
+                layout="fill"
+                objectFit="cover"
+                quality={100}
+            />
+        </div>
+        <div className="relative z-0">{children}</div>
         <Toaster />
       </body>
     </html>
