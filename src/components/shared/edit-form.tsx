@@ -140,7 +140,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                             <FormLabel>Тип объекта</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Выберите тип объекта"/></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                     <SelectItem value="residential">Жилой дом</SelectItem>
@@ -168,7 +168,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                             <FormLabel>Модель</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Выберите модель"/></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>{deviceModels.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                             </Select>
@@ -183,7 +183,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                                 <FormLabel>Тип</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Выберите тип"/></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="water">Вода</SelectItem>
@@ -198,7 +198,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                                 <FormLabel>Канал</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Выберите канал"/></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>{channelTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                                 </Select>
@@ -218,7 +218,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                             <FormLabel>Модель</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Выберите модель"/></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>{gatewayModels.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                             </Select>
@@ -232,7 +232,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                             <FormLabel>Канал</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Выберите канал"/></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>{channelTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
