@@ -160,7 +160,7 @@ export const columns: ColumnDef<Device>[] = [
     accessorKey: "created_at",
     header: "Дата создания",
     cell: ({row}) => {
-        return new Date(row.original.created_at).toLocaleDateString()
+        return new Date(row.original.created_at).toLocaleDateString('ru-RU')
     },
   },
   {
