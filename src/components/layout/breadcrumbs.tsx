@@ -11,7 +11,8 @@ const pathTranslations: { [key: string]: string } = {
   objects: 'Объекты',
   catalogs: 'Справочники',
   reports: 'Отчеты',
-  users: 'Пользователи'
+  users: 'Пользователи',
+  gateways: 'Шлюзы'
 };
 
 export function Breadcrumbs() {
