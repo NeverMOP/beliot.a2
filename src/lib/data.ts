@@ -1,4 +1,43 @@
-import { type Device, type Reading } from './types';
+import { type Device, type Reading, type BeliotObject } from './types';
+
+export const objects: BeliotObject[] = [
+  {
+    id: 1,
+    name: 'Жилой дом "Центральный"',
+    address: 'ул. Ленина, д. 1, кв. 10',
+    deviceCount: 1,
+  },
+  {
+    id: 2,
+    name: 'Тепловой пункт №3',
+    address: 'пр. Мира, д. 25',
+    deviceCount: 1,
+  },
+  {
+    id: 3,
+    name: 'Бизнес-центр "Орион"',
+    address: 'ул. Садовая, д. 5',
+    deviceCount: 1,
+  },
+  {
+    id: 4,
+    name: 'Школа №5',
+    address: 'ул. Космонавтов, д. 12',
+    deviceCount: 1,
+  },
+  {
+    id: 5,
+    name: 'Детский сад "Солнышко"',
+    address: 'ул. Парковая, д. 33',
+    deviceCount: 1,
+  },
+  {
+    id: 6,
+    name: 'Складской комплекс "Запад"',
+    address: 'Индустриальное ш., 1',
+    deviceCount: 1,
+  },
+]
 
 export const devices: Device[] = [
   {
@@ -14,6 +53,7 @@ export const devices: Device[] = [
     unit_energy: 'ГДж',
     unit_temperature: '°C',
     created_at: '2023-01-15T09:30:00Z',
+    objectId: 1,
   },
   {
     id: 2,
@@ -28,6 +68,7 @@ export const devices: Device[] = [
     unit_energy: 'ГДж',
     unit_temperature: '°C',
     created_at: '2023-02-20T11:00:00Z',
+    objectId: 2,
   },
   {
     id: 3,
@@ -42,6 +83,7 @@ export const devices: Device[] = [
     unit_energy: 'ГДж',
     unit_temperature: '°C',
     created_at: '2023-03-10T14:00:00Z',
+    objectId: 3,
   },
   {
     id: 4,
@@ -56,6 +98,7 @@ export const devices: Device[] = [
     unit_energy: 'ГДж',
     unit_temperature: '°C',
     created_at: '2023-04-01T18:45:00Z',
+    objectId: 4,
   },
   {
     id: 5,
@@ -70,6 +113,7 @@ export const devices: Device[] = [
     unit_energy: 'ГДж',
     unit_temperature: '°C',
     created_at: '2023-05-22T08:00:00Z',
+    objectId: 5,
   },
   {
     id: 6,
@@ -84,6 +128,7 @@ export const devices: Device[] = [
     unit_energy: 'ГДж',
     unit_temperature: '°C',
     created_at: '2023-06-30T12:00:00Z',
+    objectId: 6,
   },
 ];
 

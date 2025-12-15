@@ -8,6 +8,7 @@ import { devices } from '@/lib/data';
 const pathTranslations: { [key: string]: string } = {
   dashboard: 'Дашборд',
   devices: 'Устройства',
+  objects: 'Объекты',
 };
 
 export function Breadcrumbs() {

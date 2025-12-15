@@ -1,3 +1,10 @@
+export type BeliotObject = {
+    id: number;
+    name: string;
+    address: string;
+    deviceCount: number;
+}
+
 export type Device = {
   id: number;
   external_id: string;
@@ -11,6 +18,7 @@ export type Device = {
   unit_energy: 'ГДж';
   unit_temperature: '°C';
   created_at: string;
+  objectId: number;
 };
 
 export type Reading = {
