@@ -109,6 +109,11 @@ export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: "object_name",
     header: "Объект",
+    cell: ({ row }) => {
+      const objectName = row.original.object_name;
+      const objectId = row.original.objectId;
+      return <Link href={`/objects?selected_object_id=${objectId}`} className="hover:underline text-primary">{objectName}</Link>
+    }
   },
   {
     accessorKey: "address",

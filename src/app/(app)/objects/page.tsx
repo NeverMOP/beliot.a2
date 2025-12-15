@@ -1,6 +1,6 @@
 'use client'
 
-import { getObjectsTree, devices } from "@/lib/data";
+import { getObjectsTree, devices, objects as allObjects } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns as objectColumns } from "@/components/objects/columns";
 import { CreateObjectForm } from "@/components/objects/create-object-form";
@@ -16,15 +16,8 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { ObjectDeviceList } from "@/components/objects/object-device-list";
-
-// Helper function to recursively get all device IDs from an object and its children
-const getAllDeviceIds = (object: BeliotObject): number[] => {
-    let ids = devices.filter(d => d.objectId === object.id).map(d => d.id);
-    if (object.children && object.children.length > 0) {
-        ids = ids.concat(object.children.flatMap(getAllDeviceIds));
-    }
-    return ids;
-};
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 // Helper function to recursively get all devices from an object and its children
 const getAllDevices = (object: BeliotObject): Device[] => {
@@ -35,7 +28,33 @@ const getAllDevices = (object: BeliotObject): Device[] => {
     return objectDevices;
 }
 
-export default function ObjectsPage() {
+// Helper to find an object and its path in a tree
+const findObjectInTree = (nodes: BeliotObject[], id: number): BeliotObject | null => {
+    for (const node of nodes) {
+        if (node.id === id) return node;
+        if (node.children) {
+            const found = findObjectInTree(node.children, id);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+// Helper to get all parent IDs of a given object
+const getParentIds = (allObjects: BeliotObject[], objectId: number): number[] => {
+    const ids: number[] = [];
+    let current = allObjects.find(o => o.id === objectId);
+    while (current && current.parentId) {
+        ids.push(current.parentId);
+        current = allObjects.find(o => o.id === current.parentId);
+    }
+    return ids;
+};
+
+function ObjectsPageContent() {
+    const searchParams = useSearchParams();
+    const selectedObjectIdFromUrl = searchParams.get('selected_object_id');
+
     const [data, setData] = React.useState<BeliotObject[]>([]);
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
     const [selectedObject, setSelectedObject] = React.useState<BeliotObject | null>(null);
@@ -44,6 +63,24 @@ export default function ObjectsPage() {
     React.useEffect(() => {
         setData(getObjectsTree());
     }, []);
+    
+     React.useEffect(() => {
+        if (selectedObjectIdFromUrl) {
+            const objectId = parseInt(selectedObjectIdFromUrl, 10);
+            const foundObject = findObjectInTree(data, objectId);
+            if (foundObject) {
+                setSelectedObject(foundObject);
+                // Expand all parents of the selected object to make it visible
+                const parentIds = getParentIds(allObjects, objectId);
+                const newExpanded: ExpandedState = {};
+                parentIds.forEach(id => {
+                    newExpanded[id] = true;
+                });
+                setExpanded(newExpanded);
+            }
+        }
+    }, [selectedObjectIdFromUrl, data]);
+
 
     React.useEffect(() => {
         if (selectedObject) {
@@ -99,4 +136,12 @@ export default function ObjectsPage() {
       </div>
     </div>
   );
+}
+
+export default function ObjectsPage() {
+    return (
+        <Suspense fallback={<div>Загрузка...</div>}>
+            <ObjectsPageContent />
+        </Suspense>
+    )
 }
