@@ -17,14 +17,43 @@ import {
 } from '@tanstack/react-table';
 import { ObjectDeviceList } from "@/components/objects/object-device-list";
 
+// Helper function to recursively get all device IDs from an object and its children
+const getAllDeviceIds = (object: BeliotObject): number[] => {
+    let ids = devices.filter(d => d.objectId === object.id).map(d => d.id);
+    if (object.children && object.children.length > 0) {
+        ids = ids.concat(object.children.flatMap(getAllDeviceIds));
+    }
+    return ids;
+};
+
+// Helper function to recursively get all devices from an object and its children
+const getAllDevices = (object: BeliotObject): Device[] => {
+    let objectDevices = devices.filter(d => d.objectId === object.id);
+    if (object.children && object.children.length > 0) {
+        objectDevices = objectDevices.concat(object.children.flatMap(getAllDevices));
+    }
+    return objectDevices;
+}
+
 export default function ObjectsPage() {
     const [data, setData] = React.useState<BeliotObject[]>([]);
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
     const [selectedObject, setSelectedObject] = React.useState<BeliotObject | null>(null);
+    const [devicesInSelectedObject, setDevicesInSelectedObject] = React.useState<Device[]>([]);
 
     React.useEffect(() => {
         setData(getObjectsTree());
     }, []);
+
+    React.useEffect(() => {
+        if (selectedObject) {
+            const devicesToShow = getAllDevices(selectedObject);
+            setDevicesInSelectedObject(devicesToShow);
+        } else {
+            setDevicesInSelectedObject([]);
+        }
+    }, [selectedObject]);
+
 
     const handleRowClick = (row: Row<BeliotObject>) => {
         setSelectedObject(row.original);
@@ -64,11 +93,7 @@ export default function ObjectsPage() {
         <div>
             <ObjectDeviceList 
                 selectedObject={selectedObject} 
-                devices={devices.filter(d => {
-                    if (!selectedObject) return false;
-                    // Simple check, in a real app you might want to check recursively
-                    return d.objectId === selectedObject.id;
-                })} 
+                devices={devicesInSelectedObject} 
             />
         </div>
       </div>

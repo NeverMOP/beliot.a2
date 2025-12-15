@@ -27,6 +27,10 @@ const statusRussian: Record<string, string> = {
 
 export const objectDeviceListColumns: ColumnDef<Device>[] = [
   {
+    accessorKey: "object_name",
+    header: "Объект/Квартира",
+  },
+  {
     accessorKey: "type",
     header: "Тип",
     cell: ({ row }) => {
