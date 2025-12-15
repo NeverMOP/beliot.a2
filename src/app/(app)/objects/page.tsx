@@ -7,6 +7,7 @@ import { CreateObjectForm } from "@/components/objects/create-object-form";
 import * as React from 'react';
 import { type BeliotObject, type Device } from "@/lib/types";
 import { 
+    type Row,
     getCoreRowModel,
     getPaginationRowModel,
     getSortedRowModel,
@@ -25,7 +26,7 @@ export default function ObjectsPage() {
         setData(getObjectsTree());
     }, []);
 
-    const handleRowClick = (row: any) => {
+    const handleRowClick = (row: Row<BeliotObject>) => {
         setSelectedObject(row.original);
     };
 
@@ -43,6 +44,9 @@ export default function ObjectsPage() {
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
+        meta: {
+            onRowClick: handleRowClick,
+        }
     });
 
   return (
@@ -60,7 +64,11 @@ export default function ObjectsPage() {
         <div>
             <ObjectDeviceList 
                 selectedObject={selectedObject} 
-                devices={devices.filter(d => d.objectId === selectedObject?.id)} 
+                devices={devices.filter(d => {
+                    if (!selectedObject) return false;
+                    // Simple check, in a real app you might want to check recursively
+                    return d.objectId === selectedObject.id;
+                })} 
             />
         </div>
       </div>

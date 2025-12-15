@@ -3,17 +3,8 @@
 import * as React from "react"
 import {
   type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
 } from "@tanstack/react-table"
 
 import {
@@ -48,14 +39,28 @@ import { useIsMobile } from "@/hooks/use-mobile"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
-  columnFilters?: ColumnFiltersState,
-  setColumnFilters?: React.Dispatch<React.SetStateAction<ColumnFiltersState>>,
   table: ReturnType<typeof useReactTable<TData>>,
 }
 
+// Helper function to extract header text
+const getHeaderText = (header: any): string => {
+    if (typeof header === 'string') {
+        return header;
+    }
+    if (typeof header === 'function') {
+        // This is a simple heuristic, might need adjustment for more complex headers
+        const rendered = header({});
+        if (rendered && rendered.props && rendered.props.children) {
+            const children = React.Children.toArray(rendered.props.children);
+            const textChild = children.find(child => typeof child === 'string');
+            if (textChild) return textChild as string;
+        }
+    }
+    return '';
+};
+
 export function DataTable<TData, TValue>({
   columns,
-  data,
   table
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
@@ -78,7 +83,7 @@ export function DataTable<TData, TValue>({
                     .getAllColumns()
                     .filter((column) => column.getCanHide())
                     .map((column) => {
-                        const header = column.columnDef.header as string;
+                        const headerText = getHeaderText(column.columnDef.header) || column.id;
                         return (
                         <DropdownMenuCheckboxItem
                             key={column.id}
@@ -88,7 +93,7 @@ export function DataTable<TData, TValue>({
                             column.toggleVisibility(!!value)
                             }
                         >
-                            {header || column.id}
+                            {headerText}
                         </DropdownMenuCheckboxItem>
                         )
                     })}
@@ -122,9 +127,21 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() => {
+                      // This is a bit of a hack to check if the row has a click handler from the parent
+                      const originalRow = (row as any).original;
+                      if (originalRow.onClick) {
+                          originalRow.onClick();
+                      }
+                  }}
+                  className={ (table.options.meta as any)?.onRowClick ? "cursor-pointer" : "" }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} onClick={e => {
+                        if (cell.column.id === 'actions') {
+                            e.stopPropagation();
+                        }
+                    }}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -157,7 +174,7 @@ export function DataTable<TData, TValue>({
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
-              {[10, 25, 50, 100].map((pageSize) => (
+              {[5, 10, 25, 50].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>

@@ -21,16 +21,17 @@ const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
 }
 
 const DeviceStatusSummary = ({ row }: { row: any }) => {
-    const { onlineCount = 0, offlineCount = 0, warningCount = 0 } = row.original;
+    const { deviceCount, onlineCount = 0, offlineCount = 0, warningCount = 0 } = row.original;
     const canExpand = row.getCanExpand();
 
-    if (!canExpand || row.getIsExpanded()) {
-        return <span>{row.original.deviceCount}</span>;
+    // Always show summary for parent rows, expanded or not
+    if (!canExpand) {
+        return <span>{deviceCount}</span>;
     }
 
     return (
         <div className="flex items-center gap-4">
-            <span className="font-bold">{row.original.deviceCount}</span>
+            <span className="font-bold">{deviceCount}</span>
             <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-1 text-[hsl(var(--chart-1))]">
                     <CheckCircle size={16} />
@@ -59,8 +60,7 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
         return (
             <div 
                 style={{ paddingLeft: `${row.depth * 1.5}rem` }} 
-                className="flex items-center gap-1 cursor-pointer"
-                onClick={() => onRowClick(row)}
+                className="flex items-center gap-1"
             >
                 {canExpand && (
                      <Button
@@ -84,7 +84,7 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
     accessorKey: "address",
     header: "Адрес",
      cell: ({ row, getValue }) => (
-        <div onClick={() => onRowClick(row)} className="cursor-pointer">
+        <div>
             {getValue<string>()}
         </div>
     )
@@ -94,7 +94,7 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
     header: "Тип объекта",
     cell: ({ row }) => {
       const type = row.getValue("objectType") as BeliotObject['objectType'];
-      return <div onClick={() => onRowClick(row)} className="cursor-pointer">
+      return <div>
         <span>{objectTypeRussian[type]}</span>
       </div>
     }
@@ -102,7 +102,7 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
   {
     accessorKey: "deviceCount",
     header: "Устройства",
-    cell: ({ row }) => <div onClick={() => onRowClick(row)} className="cursor-pointer">
+    cell: ({ row }) => <div>
         <DeviceStatusSummary row={row} />
     </div>
   },
