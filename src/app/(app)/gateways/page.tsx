@@ -12,10 +12,7 @@ export default function GatewaysPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Шлюзы
-        </h1>
+      <div className="flex items-center justify-end">
         <CreateGatewayForm />
       </div>
       <DataTable columns={columns} data={gateways} />

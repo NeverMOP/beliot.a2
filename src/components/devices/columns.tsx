@@ -142,7 +142,7 @@ export const columns: ColumnDef<Device>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Действия</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href={`/devices/${device.id}`}>Посмотреть детали</Link>
+              <Link href={`/devices/${device.id}`}>Данные</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Редактировать</DropdownMenuItem>
             <DropdownMenuSeparator />

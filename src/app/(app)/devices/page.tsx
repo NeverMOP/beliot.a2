@@ -8,27 +8,47 @@ import { CreateDeviceForm } from '@/components/devices/create-device-form';
 import { Button } from '@/components/ui/button';
 import { type Device } from '@/lib/types';
 import { List, Droplets, Thermometer } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Search } from 'lucide-react';
+
+const searchFields: { value: keyof Device; label: string }[] = [
+    { value: 'object_name', label: 'Объект' },
+    { value: 'address', label: 'Адрес' },
+    { value: 'serial_number', label: 'Серийный номер' },
+    { value: 'id', label: 'ID' },
+    { value: 'external_id', label: 'Идентификатор' },
+]
 
 export default function DevicesPage() {
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>(
     'all'
   );
+   const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
+   const [searchValue, setSearchValue] = React.useState('');
+   const [columnFilters, setColumnFilters] = React.useState<any[]>([]);
 
-  const filteredDevices =
-    typeFilter === 'all'
-      ? devices
-      : devices.filter((device) => device.type === typeFilter);
+  React.useEffect(() => {
+    const newColumnFilters = [];
+    if (typeFilter !== 'all') {
+        newColumnFilters.push({ id: 'type', value: typeFilter });
+    }
+    if (searchValue) {
+        newColumnFilters.push({ id: searchField, value: searchValue });
+    }
+    setColumnFilters(newColumnFilters);
+  }, [typeFilter, searchField, searchValue]);
+
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Устройства
-        </h1>
-        <CreateDeviceForm />
-      </div>
-
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
             <Button
                 variant={typeFilter === 'all' ? 'default' : 'outline'}
@@ -55,8 +75,30 @@ export default function DevicesPage() {
                 Тепло
             </Button>
         </div>
+         <div className="flex flex-1 items-center gap-2 md:flex-initial">
+            <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                 <Input
+                    placeholder={`Поиск по '${searchFields.find(f => f.value === searchField)?.label}'...`}
+                    value={searchValue}
+                    onChange={(event) => setSearchValue(event.target.value)}
+                    className="pl-10 w-full"
+                />
+            </div>
+            <Select onValueChange={(value) => setSearchField(value as keyof Device)} defaultValue={searchField}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Поле для поиска" />
+                </SelectTrigger>
+                <SelectContent>
+                    {searchFields.map(field => (
+                        <SelectItem key={field.value} value={field.value}>{field.label}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+        <CreateDeviceForm />
       </div>
-      <DataTable columns={columns} data={filteredDevices} />
+      <DataTable columns={columns} data={devices} columnFilters={columnFilters} />
     </div>
   );
 }
