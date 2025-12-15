@@ -43,30 +43,6 @@ interface DataTableProps<TData, TValue> {
   table: ReturnType<typeof useReactTable<TData>>,
 }
 
-// Helper function to extract header text
-const getHeaderText = (header: any): string => {
-    if (typeof header === 'string') {
-        return header;
-    }
-    if (typeof header === 'function') {
-        // This is a simple heuristic, might need adjustment for more complex headers
-        const rendered = header({});
-        if (rendered && rendered.props && rendered.props.children) {
-            const children = React.Children.toArray(rendered.props.children);
-            const textChild = children.find(child => typeof child === 'string');
-            if (textChild) return textChild as string;
-            // Handle case where header is a component like <Button>
-            const buttonChild = children.find((c: any) => c.props && c.props.children);
-            if (buttonChild) {
-                 const buttonChildren = React.Children.toArray((buttonChild as any).props.children);
-                 const buttonText = buttonChildren.find(c => typeof c === 'string');
-                 if (buttonText) return buttonText as string;
-            }
-        }
-    }
-    return '';
-};
-
 export function DataTable<TData, TValue>({
   columns,
   table
@@ -92,7 +68,10 @@ export function DataTable<TData, TValue>({
                     .getAllColumns()
                     .filter((column) => column.getCanHide())
                     .map((column) => {
-                        const headerText = getHeaderText(column.columnDef.header) || column.id;
+                        const header = column.columnDef.header;
+                        // Use header if it's a string, otherwise fallback to column id.
+                        // This avoids trying to render a functional component without proper props.
+                        const headerText = typeof header === 'string' ? header : column.id;
                         return (
                         <DropdownMenuCheckboxItem
                             key={column.id}
