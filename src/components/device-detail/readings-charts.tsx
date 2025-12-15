@@ -59,6 +59,7 @@ const TempChart = ({ data }: { data: Reading[] }) => (
       </CardHeader>
       <CardContent>
         <ChartContainer config={heatChartConfig} className="h-[250px] w-full">
+           <ResponsiveContainer>
           <AreaChart data={data}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -88,6 +89,7 @@ const TempChart = ({ data }: { data: Reading[] }) => (
               stackId="b"
             />
           </AreaChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>

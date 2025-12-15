@@ -46,6 +46,10 @@ export const devices: Device[] = [
     unit_temperature: '°C',
     created_at: '2023-01-15T09:30:00Z',
     objectId: 1,
+    attributes: [
+        { name: 'Лицевой счет', value: '100-200-301' },
+        { name: 'Дата поверки', value: '2025-10-01' }
+    ]
   },
   {
     id: 2,
@@ -78,6 +82,9 @@ export const devices: Device[] = [
     unit_temperature: '°C',
     created_at: '2023-03-10T14:00:00Z',
     objectId: 3,
+    attributes: [
+        { name: 'Тариф', value: 'Коммерческий' }
+    ]
   },
   {
     id: 4,

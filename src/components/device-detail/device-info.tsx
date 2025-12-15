@@ -1,8 +1,9 @@
 import { type Device } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Battery, Rss, Signal, Clock, Hash, Package, GripVertical } from 'lucide-react';
+import { Battery, Rss, Signal, Clock, Hash, Package, GripVertical, Paperclip } from 'lucide-react';
 import { getReadingsForDevice } from '@/lib/data';
+import { Separator } from '../ui/separator';
 
 const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" | "destructive" | "secondary" => {
     switch (status) {
@@ -68,6 +69,21 @@ export function DeviceInfo({ device }: { device: Device }) {
             <span className="flex items-center gap-2 text-muted-foreground"><Clock size={16} />Создан</span>
             <span>{new Date(device.created_at).toLocaleDateString()}</span>
         </div>
+
+        {device.attributes && device.attributes.length > 0 && (
+            <>
+                <Separator />
+                <div className='space-y-4'>
+                    <h3 className="flex items-center gap-2 font-medium text-muted-foreground"><Paperclip size={16} />Дополнительные атрибуты</h3>
+                    {device.attributes.map(attr => (
+                        <div key={attr.name} className="flex items-center justify-between">
+                            <span className="text-muted-foreground">{attr.name}</span>
+                            <span>{attr.value}</span>
+                        </div>
+                    ))}
+                </div>
+            </>
+        )}
       </CardContent>
     </Card>
   );
