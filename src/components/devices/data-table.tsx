@@ -54,19 +54,21 @@ export function DataTable<TData, TValue>({
     },
   })
 
-  const filterColumn = table.getColumn("object_name") ?? table.getColumn("name");
+  const filterColumn = table.getColumn("object_name") || table.getColumn("name");
 
   return (
     <Card>
       <div className="flex items-center p-4">
-        <Input
-          placeholder="Фильтр по названию..."
-          value={(filterColumn?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            filterColumn?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+        {filterColumn && (
+            <Input
+              placeholder="Фильтр по названию..."
+              value={(filterColumn.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                filterColumn.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+        )}
       </div>
       <div className="relative">
         <Table>
