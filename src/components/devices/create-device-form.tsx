@@ -33,12 +33,13 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
+import { deviceModels, channelTypes } from "@/lib/catalogs";
 
 const deviceSchema = z.object({
   external_id: z.string().min(1, "External ID обязателен"),
   type: z.enum(["water", "heat"]),
   model: z.string().min(1, "Модель обязательна"),
-  channel_type: z.enum(["lora", "nbiot", "rs485"]),
+  channel_type: z.string().min(1, "Тип канала обязателен"),
   object_name: z.string().min(1, "Название объекта обязательно"),
   address: z.string().min(1, "Адрес обязателен"),
 });
@@ -52,7 +53,6 @@ export function CreateDeviceForm() {
     resolver: zodResolver(deviceSchema),
     defaultValues: {
       type: "water",
-      channel_type: "lora",
     },
   });
 
@@ -103,9 +103,18 @@ export function CreateDeviceForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Модель</FormLabel>
-                  <FormControl>
-                    <Input placeholder="RSVU-1400" {...field} />
-                  </FormControl>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите модель" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {deviceModels.map((model) => (
+                            <SelectItem key={model} value={model}>{model}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -171,9 +180,9 @@ export function CreateDeviceForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="lora">lora</SelectItem>
-                        <SelectItem value="nbiot">nbiot</SelectItem>
-                        <SelectItem value="rs485">rs485</SelectItem>
+                         {channelTypes.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
