@@ -89,10 +89,6 @@ const MobileNav = () => {
 export function MainNav() {
   const isMobile = useIsMobile();
 
-  if (isMobile === undefined) {
-    return <div className="flex items-center gap-6"><Logo /></div>
-  }
-
   return (
     <div className="flex items-center gap-6">
         {isMobile && <MobileNav />}

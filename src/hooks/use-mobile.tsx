@@ -1,9 +1,13 @@
+"use client";
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
 
+// This hook has been modified to avoid returning `undefined` on initial render,
+// which can cause performance issues with components that depend on it.
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
     // Check if window is defined (for server-side rendering)
@@ -17,7 +21,7 @@ export function useIsMobile() {
       setIsMobile(mql.matches)
     }
 
-    // Set initial value
+    // Set initial value on mount
     onChange();
 
     mql.addEventListener("change", onChange)
