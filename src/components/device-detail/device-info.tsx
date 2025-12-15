@@ -1,7 +1,7 @@
 import { type Device } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Battery, Rssi, Signal, Clock, FileText, MapPin, Hash, Package } from 'lucide-react';
+import { Battery, Rss, Signal, Clock, FileText, MapPin, Hash, Package } from 'lucide-react';
 import { getReadingsForDevice } from '@/lib/data';
 
 const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" | "destructive" | "secondary" => {
@@ -43,7 +43,7 @@ export function DeviceInfo({ device }: { device: Device }) {
                     <span>{latestReading.battery_percent.toFixed(0)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Rssi size={16} />RSSI</span>
+                    <span className="flex items-center gap-2 text-muted-foreground"><Rss size={16} />RSSI</span>
                     <span>{latestReading.rssi} dBm</span>
                 </div>
             </>
