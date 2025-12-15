@@ -59,7 +59,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true,
+      defaultOpen = false,
       open: openProp,
       onOpenChange: setOpenProp,
       side = "left",
@@ -217,7 +217,7 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className="group peer relative hidden md:block text-sidebar-foreground"
+        className="group peer relative hidden h-full md:block text-sidebar-foreground"
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -267,23 +267,52 @@ const SidebarTrigger = React.forwardRef<
 })
 SidebarTrigger.displayName = "SidebarTrigger"
 
+const useFixedRailPosition = () => {
+    const railRef = React.useRef<HTMLButtonElement>(null);
+
+    const updatePosition = React.useCallback(() => {
+        if (railRef.current) {
+            const y = window.innerHeight / 2;
+            railRef.current.style.top = `${y}px`;
+        }
+    }, []);
+
+    React.useEffect(() => {
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        window.addEventListener('scroll', updatePosition, true); // Use capture phase
+
+        return () => {
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+        };
+    }, [updatePosition]);
+
+    return railRef;
+};
+
+
 const SidebarRail = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button">
 >(({ className, ...props }, ref) => {
   const { toggleSidebar, state, side } = useSidebar()
+  const railRef = useFixedRailPosition();
+
+  // Combine refs if the parent needs one
+  React.useImperativeHandle(ref, () => railRef.current as HTMLButtonElement);
 
   const isExpanded = state === "expanded"
   const Icon = (isExpanded && side === 'left') || (!isExpanded && side === 'right') ? ChevronsLeft : ChevronsRight;
 
   return (
     <Button
-      ref={ref}
+      ref={railRef}
       variant="ghost"
       size="icon"
       onClick={toggleSidebar}
       className={cn(
-        "fixed top-1/2 -translate-y-1/2 z-20 h-8 w-8 hidden md:flex rounded-full bg-background text-foreground border",
+        "absolute -translate-y-1/2 z-20 h-8 w-8 hidden md:flex rounded-full bg-background text-foreground border",
         "hover:bg-accent hover:text-accent-foreground",
         "group-data-[state=expanded]:left-[var(--sidebar-width)]",
         "group-data-[state=collapsed]:left-[var(--sidebar-width-icon)]",
