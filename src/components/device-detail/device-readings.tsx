@@ -23,12 +23,17 @@ export function DeviceReadings({
   });
   
   const filteredReadings = React.useMemo(() => {
-    if (!dateRange?.from || !dateRange?.to) {
+    if (!dateRange?.from) { // Only 'from' is needed to start filtering
         return readings;
     }
+    const fromDate = dateRange.from;
+    // If only 'from' is selected, 'to' is the same day.
+    const toDate = dateRange.to || dateRange.from;
+
     return readings.filter(reading => {
         const readingDate = new Date(reading.time);
-        return readingDate >= dateRange.from! && readingDate <= dateRange.to!;
+        // Compare dates only, ignoring time part for start and end
+        return readingDate >= fromDate && readingDate <= toDate;
     });
   }, [readings, dateRange]);
 
@@ -38,7 +43,7 @@ export function DeviceReadings({
     <>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-1">
-            <DeviceInfo device={device} />
+                <DeviceInfo device={device} />
             </div>
             <div className="lg:col-span-2 space-y-4">
                  <DateRangePicker 
