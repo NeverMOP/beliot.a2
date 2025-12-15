@@ -5,6 +5,7 @@ import {
   type ColumnDef,
   flexRender,
   useReactTable,
+  type Row,
 } from "@tanstack/react-table"
 
 import {
@@ -54,6 +55,13 @@ const getHeaderText = (header: any): string => {
             const children = React.Children.toArray(rendered.props.children);
             const textChild = children.find(child => typeof child === 'string');
             if (textChild) return textChild as string;
+            // Handle case where header is a component like <Button>
+            const buttonChild = children.find((c: any) => c.props && c.props.children);
+            if (buttonChild) {
+                 const buttonChildren = React.Children.toArray((buttonChild as any).props.children);
+                 const buttonText = buttonChildren.find(c => typeof c === 'string');
+                 if (buttonText) return buttonText as string;
+            }
         }
     }
     return '';
@@ -64,10 +72,11 @@ export function DataTable<TData, TValue>({
   table
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
+  const onRowClick = (table.options.meta as any)?.onRowClick;
 
   return (
     <Card>
-      {!isMobile && (
+      {!isMobile && table.getAllColumns().some(c => c.getCanHide()) && (
         <div className="flex items-center justify-end p-4 gap-4">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -123,21 +132,20 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row: Row<TData>) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   onClick={() => {
-                      // This is a bit of a hack to check if the row has a click handler from the parent
-                      const originalRow = (row as any).original;
-                      if (originalRow.onClick) {
-                          originalRow.onClick();
+                      if (onRowClick) {
+                          onRowClick(row);
                       }
                   }}
-                  className={ (table.options.meta as any)?.onRowClick ? "cursor-pointer" : "" }
+                  className={ onRowClick ? "cursor-pointer" : "" }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} onClick={e => {
+                        // Prevent row click from firing when clicking on dropdown menu
                         if (cell.column.id === 'actions') {
                             e.stopPropagation();
                         }
@@ -158,7 +166,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 p-4">
-        {!isMobile && <div className="flex-1 text-sm text-muted-foreground">
+        {!isMobile && table.getFilteredSelectedRowModel && <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} из{' '}
           {table.getFilteredRowModel().rows.length} строк выбрано.
         </div>}

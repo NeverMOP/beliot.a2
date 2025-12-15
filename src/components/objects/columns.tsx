@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { type ColumnDef } from "@tanstack/react-table"
+import { type ColumnDef, type Row } from "@tanstack/react-table"
 import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -20,12 +20,10 @@ const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
     warehouse: 'Склад',
 }
 
-const DeviceStatusSummary = ({ row }: { row: any }) => {
+const DeviceStatusSummary = ({ row }: { row: Row<BeliotObject> }) => {
     const { deviceCount, onlineCount = 0, offlineCount = 0, warningCount = 0 } = row.original;
-    const canExpand = row.getCanExpand();
 
-    // Always show summary for parent rows, expanded or not
-    if (!canExpand) {
+    if (deviceCount === 0) {
         return <span>{deviceCount}</span>;
     }
 
@@ -131,7 +129,7 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
              <EditForm
                 entity={object}
                 entityName="object"
-                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
+                trigger={<div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">Редактировать</div>}
             />
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" disabled>Удалить</DropdownMenuItem>
