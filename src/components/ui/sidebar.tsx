@@ -270,23 +270,24 @@ SidebarTrigger.displayName = "SidebarTrigger"
 const useFixedRailPosition = () => {
     const railRef = React.useRef<HTMLButtonElement>(null);
 
-    const updatePosition = React.useCallback(() => {
-        if (railRef.current) {
-            const y = window.innerHeight / 2;
-            railRef.current.style.top = `${y}px`;
-        }
-    }, []);
-
     React.useEffect(() => {
+        const rail = railRef.current;
+        if (!rail) return;
+
+        const updatePosition = () => {
+            const y = window.innerHeight / 2;
+            rail.style.top = `${y}px`;
+        };
+
         updatePosition();
         window.addEventListener('resize', updatePosition);
-        window.addEventListener('scroll', updatePosition, true); // Use capture phase
+        document.addEventListener('scroll', updatePosition, true); // Use document and capture phase
 
         return () => {
             window.removeEventListener('resize', updatePosition);
-            window.removeEventListener('scroll', updatePosition, true);
+            document.removeEventListener('scroll', updatePosition, true);
         };
-    }, [updatePosition]);
+    }, []);
 
     return railRef;
 };
@@ -312,11 +313,11 @@ const SidebarRail = React.forwardRef<
       size="icon"
       onClick={toggleSidebar}
       className={cn(
-        "absolute -translate-y-1/2 z-20 h-8 w-8 hidden md:flex rounded-full bg-background text-foreground border",
+        "fixed z-20 h-8 w-8 hidden md:flex rounded-full bg-background text-foreground border",
         "hover:bg-accent hover:text-accent-foreground",
         "group-data-[state=expanded]:left-[var(--sidebar-width)]",
         "group-data-[state=collapsed]:left-[var(--sidebar-width-icon)]",
-        "translate-x-[-50%]",
+        "-translate-y-1/2 translate-x-[-50%]",
         className
       )}
       {...props}
