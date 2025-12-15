@@ -4,6 +4,9 @@ export type BeliotObject = {
     address: string;
     objectType: 'residential' | 'business_center' | 'mall' | 'medical' | 'school' | 'kindergarten' | 'heating_point' | 'warehouse';
     deviceCount: number;
+    onlineCount?: number;
+    offlineCount?: number;
+    warningCount?: number;
     parentId?: number | null;
     children?: BeliotObject[];
 }

@@ -1,40 +1,19 @@
 import { type Device, type Reading, type BeliotObject, type User } from './types';
 
-export const objects: BeliotObject[] = [
-  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 1, objectType: 'residential' },
-  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 1, objectType: 'heating_point', parentId: 1 },
-  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 1, objectType: 'business_center' },
-  { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 1, objectType: 'school' },
-  { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 1, objectType: 'kindergarten', parentId: 4 },
-  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 1, objectType: 'warehouse' },
-]
+export const initialObjects: BeliotObject[] = [
+  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 0, objectType: 'residential' },
+  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 0, objectType: 'heating_point', parentId: 1 },
+  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 0, objectType: 'business_center' },
+  { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 0, objectType: 'school' },
+  { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 0, objectType: 'kindergarten', parentId: 4 },
+  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 0, objectType: 'warehouse' },
+];
 
 export const users: User[] = [
     { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
     { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user' },
     { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer' },
 ];
-
-export function getObjectsTree(): BeliotObject[] {
-  const objectsById = new Map(objects.map(obj => [obj.id, { ...obj, children: [] as BeliotObject[] }]));
-  const roots: BeliotObject[] = [];
-
-  for (const obj of objects) {
-    const current = objectsById.get(obj.id)!;
-    if (obj.parentId) {
-      const parent = objectsById.get(obj.parentId);
-      if (parent) {
-        parent.children.push(current);
-      } else {
-        roots.push(current);
-      }
-    } else {
-      roots.push(current);
-    }
-  }
-  return roots;
-}
-
 
 export const devices: Device[] = [
   {
@@ -67,7 +46,7 @@ export const devices: Device[] = [
     channel_type: 'gsm',
     address: 'пр. Мира, д. 25',
     object_name: 'Тепловой пункт №3',
-    status: 'online',
+    status: 'offline',
     unit_volume: 'м³',
     unit_energy: 'ГДж',
     unit_temperature: '°C',
@@ -146,7 +125,89 @@ export const devices: Device[] = [
     objectId: 6,
     is_gateway: true,
   },
+  {
+    id: 7,
+    external_id: 'ZYX987WVU654TSR4',
+    serial_number: 'SN-007-G',
+    type: 'water',
+    model: 'RSVU-1400',
+    channel_type: 'nbiot',
+    address: 'ул. Ленина, д. 1, кв. 11',
+    object_name: 'Жилой дом "Центральный"',
+    status: 'warning',
+    unit_volume: 'м³',
+    unit_energy: 'ГДж',
+    unit_temperature: '°C',
+    created_at: '2023-05-22T08:00:00Z',
+    objectId: 1,
+    is_gateway: false,
+  },
 ];
+
+// Function to calculate device counts for each object
+const calculateObjectDeviceCounts = (): BeliotObject[] => {
+    const objectsWithCounts = new Map<number, BeliotObject>();
+
+    initialObjects.forEach(obj => {
+        objectsWithCounts.set(obj.id, {
+            ...obj,
+            deviceCount: 0,
+            onlineCount: 0,
+            offlineCount: 0,
+            warningCount: 0,
+        });
+    });
+
+    devices.forEach(device => {
+        const obj = objectsWithCounts.get(device.objectId);
+        if (obj) {
+            obj.deviceCount++;
+            switch (device.status) {
+                case 'online':
+                    obj.onlineCount!++;
+                    break;
+                case 'offline':
+                    obj.offlineCount!++;
+                    break;
+                case 'warning':
+                    obj.warningCount!++;
+                    break;
+            }
+        }
+    });
+
+    return Array.from(objectsWithCounts.values());
+};
+
+export const objects = calculateObjectDeviceCounts();
+
+
+export function getObjectsTree(): BeliotObject[] {
+  const objectsById = new Map(objects.map(obj => [obj.id, { ...obj, children: [] as BeliotObject[] }]));
+  const roots: BeliotObject[] = [];
+
+  objects.forEach(obj => {
+    const current = objectsById.get(obj.id)!;
+    if (obj.parentId) {
+      const parent = objectsById.get(obj.parentId);
+      if (parent) {
+        parent.children.push(current);
+        // Aggregate counts up to the parent
+        parent.deviceCount += current.deviceCount;
+        parent.onlineCount! += current.onlineCount!;
+        parent.offlineCount! += current.offlineCount!;
+        parent.warningCount! += current.warningCount!;
+      } else {
+        roots.push(current);
+      }
+    } else {
+      roots.push(current);
+    }
+  });
+
+  // This filtering step ensures we only return top-level objects
+  return roots.filter(obj => !obj.parentId || !objectsById.has(obj.parentId));
+}
 
 const generateReadings = (
   deviceId: number,

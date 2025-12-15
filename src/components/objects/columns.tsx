@@ -5,7 +5,7 @@ import { type ColumnDef } from "@tanstack/react-table"
 import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, ChevronsRight, Eye } from "lucide-react"
+import { MoreHorizontal, ChevronsRight, Eye, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
 import { EditForm } from "../shared/edit-form"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
@@ -19,6 +19,35 @@ const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
     warehouse: 'Склад',
 }
 
+const DeviceStatusSummary = ({ row }: { row: any }) => {
+    const { onlineCount = 0, offlineCount = 0, warningCount = 0 } = row.original;
+    const canExpand = row.getCanExpand();
+
+    if (!canExpand || row.getIsExpanded()) {
+        return <span>{row.original.deviceCount}</span>;
+    }
+
+    return (
+        <div className="flex items-center gap-4">
+            <span className="font-bold">{row.original.deviceCount}</span>
+            <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-1 text-[hsl(var(--chart-1))]">
+                    <CheckCircle size={16} />
+                    <span>{onlineCount}</span>
+                </div>
+                 <div className="flex items-center gap-1 text-muted-foreground">
+                    <XCircle size={16} />
+                    <span>{offlineCount}</span>
+                </div>
+                <div className="flex items-center gap-1 text-destructive">
+                    <AlertTriangle size={16} />
+                    <span>{warningCount}</span>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "name",
@@ -27,7 +56,7 @@ export const columns: ColumnDef<BeliotObject>[] = [
         const canExpand = row.getCanExpand();
         const isExpanded = row.getIsExpanded();
         return (
-            <div style={{ paddingLeft: `${row.depth * 2}rem` }} className="flex items-center gap-2">
+            <div style={{ paddingLeft: `${row.depth * 1.5}rem` }} className="flex items-center gap-1">
                 {canExpand && (
                      <Button
                         variant="ghost"
@@ -38,7 +67,7 @@ export const columns: ColumnDef<BeliotObject>[] = [
                         <ChevronsRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                     </Button>
                 )}
-                <span>{getValue<string>()}</span>
+                <span className="font-medium">{getValue<string>()}</span>
             </div>
         )
     }
@@ -57,7 +86,8 @@ export const columns: ColumnDef<BeliotObject>[] = [
   },
   {
     accessorKey: "deviceCount",
-    header: "Кол-во устройств",
+    header: "Устройства",
+    cell: ({ row }) => <DeviceStatusSummary row={row} />
   },
   {
     id: "actions",
