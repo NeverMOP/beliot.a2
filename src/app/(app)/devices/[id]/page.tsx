@@ -2,6 +2,8 @@ import { getDeviceById, getReadingsForDevice } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { DeviceInfo } from '@/components/device-detail/device-info';
 import { ReadingsCharts } from '@/components/device-detail/readings-charts';
+import { ReadingsTable } from '@/components/device-detail/readings-table';
+import { readingsColumns } from '@/components/device-detail/readings-columns';
 
 export default function DeviceDetailPage({ params }: { params: { id: string } }) {
   const deviceId = parseInt(params.id, 10);
@@ -23,6 +25,7 @@ export default function DeviceDetailPage({ params }: { params: { id: string } })
           <ReadingsCharts device={device} readings={readings} />
         </div>
       </div>
+      <ReadingsTable columns={readingsColumns(device)} data={readings} />
     </div>
   );
 }
