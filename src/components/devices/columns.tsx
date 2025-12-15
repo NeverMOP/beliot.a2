@@ -1,26 +1,15 @@
 "use client"
 
+import * as React from "react";
 import { type ColumnDef } from "@tanstack/react-table"
 import { type Device } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer, Check, GitBranch } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Droplets, Thermometer, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { getReadingsForDevice } from "@/lib/data"
-
-const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" | "destructive" | "secondary" => {
-    switch (status) {
-      case 'online':
-        return 'default';
-      case 'warning':
-        return 'destructive';
-      case 'offline':
-        return 'secondary';
-      default:
-        return 'secondary';
-    }
-}
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -44,7 +33,7 @@ const typeRussian: Record<string, string> = {
     heat: 'Тепло'
 }
 
-export const columns: ColumnDef<Device>[] = [
+const getBaseColumns: () => ColumnDef<Device>[] = () => [
   {
     accessorKey: "id",
     header: "ID",
@@ -164,3 +153,19 @@ export const columns: ColumnDef<Device>[] = [
     },
   },
 ]
+
+export const useColumns = (): ColumnDef<Device>[] => {
+  const isMobile = useIsMobile();
+  const allColumns = getBaseColumns();
+
+  return React.useMemo(() => {
+    if (isMobile === undefined) {
+      // Пока хук не определил, можно показать состояние загрузки или базовый набор
+      return allColumns.filter(c => ['serial_number', 'latest_data', 'status', 'actions'].includes(c.id || c.accessorKey as string));
+    }
+    if (isMobile) {
+      return allColumns.filter(c => ['serial_number', 'latest_data', 'status', 'actions'].includes(c.id || c.accessorKey as string));
+    }
+    return allColumns;
+  }, [isMobile]);
+};

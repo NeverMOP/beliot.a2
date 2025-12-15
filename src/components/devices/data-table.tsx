@@ -11,6 +11,9 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  type VisibilityState
 } from "@tanstack/react-table"
 
 import {
@@ -39,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 
 interface DataTableProps<TData, TValue> {
@@ -55,6 +59,9 @@ export function DataTable<TData, TValue>({
   setColumnFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const isMobile = useIsMobile();
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({})
 
   const table = useReactTable({
     data,
@@ -65,46 +72,69 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
       columnFilters,
+      columnVisibility,
     },
   })
 
+  React.useEffect(() => {
+    if (isMobile) {
+      const visibleColumns = columns.reduce((acc, col) => {
+        const key = (col as any).accessorKey || (col as any).id;
+        if (['serial_number', 'latest_data', 'status', 'actions'].includes(key)) {
+          (acc as any)[key] = true;
+        } else {
+          (acc as any)[key] = false;
+        }
+        return acc;
+      }, {});
+      table.setColumnVisibility(visibleColumns);
+    } else {
+      table.setColumnVisibility({}); // Показать все колонки на десктопе
+    }
+  }, [isMobile, table, columns]);
+
   return (
     <Card>
-      <div className="flex items-center justify-end p-4 gap-4">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Колонки
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-                {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                    const header = column.columnDef.header as string;
-                    return (
-                    <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                        }
-                    >
-                        {header || column.id}
-                    </DropdownMenuCheckboxItem>
-                    )
-                })}
-            </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {!isMobile && (
+        <div className="flex items-center justify-end p-4 gap-4">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="ml-auto">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Колонки
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                    {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                        const header = column.columnDef.header as string;
+                        return (
+                        <DropdownMenuCheckboxItem
+                            key={column.id}
+                            className="capitalize"
+                            checked={column.getIsVisible()}
+                            onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                            }
+                        >
+                            {header || column.id}
+                        </DropdownMenuCheckboxItem>
+                        )
+                    })}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+      )}
       <div className="relative">
         <Table>
           <TableHeader>
@@ -150,10 +180,10 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 p-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {!isMobile && <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} из{' '}
           {table.getFilteredRowModel().rows.length} строк выбрано.
-        </div>
+        </div>}
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Строк на странице</p>
           <Select
@@ -174,7 +204,7 @@ export function DataTable<TData, TValue>({
             </SelectContent>
           </Select>
         </div>
-         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+         <div className="hidden w-[100px] items-center justify-center text-sm font-medium sm:flex">
             Стр. {table.getState().pagination.pageIndex + 1} из{' '}
             {table.getPageCount()}
         </div>
