@@ -35,7 +35,7 @@ const chartConfig = {
   },
   warning: {
     label: 'Предупреждения',
-    color: 'hsl(var(--chart-4))',
+    color: 'hsl(var(--destructive))',
   },
 } satisfies ChartConfig;
 

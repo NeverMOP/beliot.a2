@@ -22,6 +22,17 @@ const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" |
     }
 }
 
+const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
+    switch (status) {
+        case 'online':
+            return 'bg-[hsl(var(--chart-1))] text-primary-foreground';
+        case 'warning':
+            return 'bg-destructive text-destructive-foreground';
+        default:
+            return 'bg-secondary text-secondary-foreground';
+    }
+}
+
 const statusRussian: Record<string, string> = {
     online: 'Онлайн',
     offline: 'Офлайн',
@@ -107,7 +118,7 @@ export const columns: ColumnDef<Device>[] = [
     header: 'Шлюз',
     cell: ({ row }) => {
         const isGateway = row.getValue('is_gateway');
-        return isGateway ? <div className="flex justify-center"><GitBranch className="h-4 w-4 text-green-500" /></div> : null;
+        return isGateway ? <div className="flex justify-center"><GitBranch className="h-4 w-4 text-[hsl(var(--chart-1))]" /></div> : null;
     }
   },
   {
@@ -115,7 +126,7 @@ export const columns: ColumnDef<Device>[] = [
     header: "Статус",
     cell: ({ row }) => {
       const status = row.getValue("status") as Device['status'];
-      return <Badge variant={getStatusVariant(status)} className="capitalize">{statusRussian[status]}</Badge>
+      return <Badge className={`capitalize ${getStatusClass(status)}`}>{statusRussian[status]}</Badge>
     }
   },
   {

@@ -9,10 +9,10 @@ export function SummaryCards() {
   const warningDevices = devices.filter((d) => d.status === 'warning').length;
 
   const summaries = [
-    { title: 'Всего устройств', value: totalDevices, icon: CircuitBoard, color: 'text-primary' },
-    { title: 'Онлайн', value: onlineDevices, icon: CheckCircle, color: 'text-green-500' },
-    { title: 'Офлайн', value: offlineDevices, icon: XCircle, color: 'text-slate-500' },
-    { title: 'Предупреждения', value: warningDevices, icon: AlertTriangle, color: 'text-yellow-500' },
+    { title: 'Всего устройств', value: totalDevices, icon: CircuitBoard, color: 'text-muted-foreground' },
+    { title: 'Онлайн', value: onlineDevices, icon: CheckCircle, color: 'text-[hsl(var(--chart-1))]' },
+    { title: 'Офлайн', value: offlineDevices, icon: XCircle, color: 'text-muted-foreground' },
+    { title: 'Предупреждения', value: warningDevices, icon: AlertTriangle, color: 'text-destructive' },
   ];
 
   return (
