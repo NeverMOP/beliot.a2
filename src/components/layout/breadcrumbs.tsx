@@ -29,7 +29,7 @@ export function Breadcrumbs() {
   }
 
   return (
-    <nav aria-label="breadcrumb" className="hidden md:flex">
+    <nav aria-label="breadcrumb" className="hidden text-secondary-foreground md:flex">
       <ol className="flex items-center gap-1.5 text-sm">
         {segments.map((segment, index) => {
           const href = '/' + segments.slice(0, index + 1).join('/');
@@ -43,14 +43,14 @@ export function Breadcrumbs() {
 
           return (
             <Fragment key={href}>
-              {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+              {index > 0 && <ChevronRight className="h-4 w-4 " />}
               <li>
                 <Link
                   href={href}
                   className={
                     isLast
-                      ? 'font-medium text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'font-medium text-secondary-foreground'
+                      : 'text-secondary-foreground/70 hover:text-secondary-foreground'
                   }
                 >
                   {title}

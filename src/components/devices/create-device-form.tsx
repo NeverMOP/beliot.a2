@@ -71,7 +71,7 @@ export function CreateDeviceForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="outline-primary">
           <PlusCircle className="mr-2 h-4 w-4" />
           Создать устройство
         </Button>
