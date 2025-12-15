@@ -84,20 +84,27 @@ export function DataTable<TData, TValue>({
 
   React.useEffect(() => {
     if (isMobile) {
-      const visibleColumns = columns.reduce((acc, col) => {
-        const key = (col as any).accessorKey || (col as any).id;
+      const mobileColumns: Record<string, boolean> = {};
+      columns.forEach((col: any) => {
+        const key = col.accessorKey || col.id;
         if (['serial_number', 'latest_data', 'status', 'actions'].includes(key)) {
-          (acc as any)[key] = true;
+          mobileColumns[key] = true;
         } else {
-          (acc as any)[key] = false;
+          mobileColumns[key] = false;
         }
-        return acc;
-      }, {});
-      table.setColumnVisibility(visibleColumns);
+      });
+      table.setColumnVisibility(mobileColumns);
     } else {
-      table.setColumnVisibility({}); // Показать все колонки на десктопе
+       const desktopColumns: Record<string, boolean> = {};
+       columns.forEach((col: any) => {
+         const key = col.accessorKey || col.id;
+         if (col.enableHiding !== false) {
+          desktopColumns[key] = true;
+         }
+       });
+       table.setColumnVisibility(desktopColumns);
     }
-  }, [isMobile, table, columns]);
+  }, [isMobile, columns, table]);
 
   return (
     <Card>

@@ -1,32 +1,39 @@
 "use client"
 
+import * as React from "react";
 import { type ColumnDef } from "@tanstack/react-table"
 import { type Device } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, GitBranch } from "lucide-react"
 import Link from "next/link"
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export const columns: ColumnDef<Device>[] = [
+const getBaseGatewayColumns: () => ColumnDef<Device>[] = () => [
   {
     accessorKey: "id",
     header: "ID",
+    enableHiding: true,
   },
   {
     accessorKey: "object_name",
     header: "Объект",
+    enableHiding: true,
   },
   {
     accessorKey: "external_id",
     header: "Идентификатор (IMEI/EUI)",
+    enableHiding: true,
   },
   {
     accessorKey: "serial_number",
     header: "Серийный номер",
+    enableHiding: true,
   },
   {
     accessorKey: "model",
     header: "Модель",
+    enableHiding: true,
   },
   {
     accessorKey: "channel_type",
@@ -37,14 +44,16 @@ export const columns: ColumnDef<Device>[] = [
         <GitBranch className="h-4 w-4 text-muted-foreground" />
         <span>{type}</span>
       </div>
-    }
+    },
+    enableHiding: true,
   },
   {
     accessorKey: "created_at",
     header: "Дата создания",
     cell: ({row}) => {
         return new Date(row.original.created_at).toLocaleDateString()
-    }
+    },
+    enableHiding: true,
   },
   {
     id: "actions",
@@ -73,4 +82,10 @@ export const columns: ColumnDef<Device>[] = [
       )
     },
   },
-]
+];
+
+
+export const useGatewayColumns = (): ColumnDef<Device>[] => {
+  const columns = React.useMemo(() => getBaseGatewayColumns(), []);
+  return columns;
+};
