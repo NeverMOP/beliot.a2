@@ -22,7 +22,7 @@ export function MainNav() {
     <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2">
             <Hexagon className="h-8 w-8 text-primary" />
-            <h1 className="font-headline text-xl font-semibold text-header-foreground">
+            <h1 className="font-headline text-xl font-semibold uppercase text-header-foreground">
                 beliot
             </h1>
         </Link>
