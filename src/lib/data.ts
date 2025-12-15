@@ -164,11 +164,13 @@ for (let i = 1; i <= 80; i++) {
     initialObjects.push(apartmentObject);
 
     const statuses: Device['status'][] = ['online', 'offline', 'warning'];
-    const randomStatus = () => statuses[Math.floor(Math.random() * statuses.length)];
+    // This is a pseudo-random, but deterministic way to get a status based on the device ID.
+    // It prevents hydration errors caused by Math.random() being different on server and client.
+    const deterministicStatus = (id: number) => statuses[id % statuses.length];
 
-    // Device 1: Water (Hot)
+    const device1Id = deviceIdCounter++;
     devices.push({
-        id: deviceIdCounter++,
+        id: device1Id,
         external_id: `BD-APT${i}-W1`,
         serial_number: `SN-W1-${1000 + i}`,
         type: 'water',
@@ -176,7 +178,7 @@ for (let i = 1; i <= 80; i++) {
         channel_type: 'lora',
         address: apartmentObject.address,
         object_name: apartmentObject.name,
-        status: randomStatus(),
+        status: deterministicStatus(device1Id),
         unit_volume: 'м³',
         unit_energy: 'ГДж',
         unit_temperature: '°C',
@@ -185,9 +187,9 @@ for (let i = 1; i <= 80; i++) {
         is_gateway: false
     });
 
-    // Device 2: Water (Cold)
+    const device2Id = deviceIdCounter++;
     devices.push({
-        id: deviceIdCounter++,
+        id: device2Id,
         external_id: `BD-APT${i}-W2`,
         serial_number: `SN-W2-${2000 + i}`,
         type: 'water',
@@ -195,7 +197,7 @@ for (let i = 1; i <= 80; i++) {
         channel_type: 'lora',
         address: apartmentObject.address,
         object_name: apartmentObject.name,
-        status: randomStatus(),
+        status: deterministicStatus(device2Id),
         unit_volume: 'м³',
         unit_energy: 'ГДж',
         unit_temperature: '°C',
@@ -204,9 +206,9 @@ for (let i = 1; i <= 80; i++) {
         is_gateway: false
     });
 
-    // Device 3: Heat
+    const device3Id = deviceIdCounter++;
     devices.push({
-        id: deviceIdCounter++,
+        id: device3Id,
         external_id: `BD-APT${i}-H1`,
         serial_number: `SN-H1-${3000 + i}`,
         type: 'heat',
@@ -214,7 +216,7 @@ for (let i = 1; i <= 80; i++) {
         channel_type: 'lora',
         address: apartmentObject.address,
         object_name: apartmentObject.name,
-        status: randomStatus(),
+        status: deterministicStatus(device3Id),
         unit_volume: 'м³',
         unit_energy: 'ГДж',
         unit_temperature: '°C',
