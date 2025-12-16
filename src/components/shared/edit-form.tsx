@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { type BeliotObject, type Device } from "@/lib/types";
-import { allObjects, devices as allDevices } from "@/lib/data";
+import { getAllObjects, getDevices as getAllDevices } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 
 type Entity = BeliotObject | Device;
@@ -45,16 +45,14 @@ const deviceSchema = z.object({
 
 
 const schemas = {
-  // We only support device editing for now as per the request
   device: deviceSchema,
 };
 
-const getFormDefaultValues = (entityName: EntityName, entity: Entity) => {
+const getFormDefaultValues = async (entityName: EntityName, entity: Entity) => {
     switch (entityName) {
         case 'device':
             const dev = entity as Device;
-            // This is a simplified logic, in real app we'd need a more robust way to find the gateway
-            const gateway = allDevices.find(d => d.is_gateway && d.objectId === dev.objectId);
+            const gateway = await getGatewayForDevice(dev);
             return {
                 objectId: dev.objectId ? String(dev.objectId) : "",
                 gatewayId: gateway ? String(gateway.id) : undefined,
@@ -63,6 +61,25 @@ const getFormDefaultValues = (entityName: EntityName, entity: Entity) => {
             return {};
     }
 }
+
+async function getGatewayForDevice(device: Device): Promise<Device | undefined> {
+    if (device.is_gateway || !device.objectId) {
+        return undefined;
+    }
+    const allDevices = await getAllDevices();
+    const allObjects = await getAllObjects();
+    // Find the gateway that is on the same object or a parent object.
+    let currentObjectId: number | undefined | null = device.objectId;
+    while (currentObjectId) {
+        const gateway = allDevices.find(d => d.is_gateway && d.objectId === currentObjectId);
+        if (gateway) {
+            return gateway;
+        }
+        const currentObject = allObjects.find(o => o.id === currentObjectId);
+        currentObjectId = currentObject?.parentId;
+    }
+    return undefined;
+};
 
 
 interface EditFormProps {
@@ -74,10 +91,10 @@ interface EditFormProps {
 
 export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormProps) {
   const { toast } = useToast();
+  const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
+  const [gateways, setGateways] = React.useState<Device[]>([]);
   
   if (entityName !== 'device') {
-    // Silently return null if we are not editing a device, to avoid crashes.
-    // In a real app we might show a "not implemented" message.
     return null;
   }
   
@@ -88,11 +105,24 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
   });
+  
+  React.useEffect(() => {
+      const fetchData = async () => {
+          const [objects, allDevices] = await Promise.all([
+              getAllObjects(),
+              getAllDevices()
+          ]);
+          setAllObjects(objects);
+          setGateways(allDevices.filter(d => d.is_gateway));
+      }
+      fetchData();
+  }, []);
 
   React.useEffect(() => {
     if (entity && isOpen) {
-        const defaultValues = getFormDefaultValues(entityName, entity);
-        form.reset(defaultValues);
+        getFormDefaultValues(entityName, entity).then(defaultValues => {
+             form.reset(defaultValues);
+        });
     }
   }, [entity, entityName, isOpen, form]);
 
@@ -104,8 +134,6 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
     });
     onOpenChange(false);
   }
-  
-  const gateways = React.useMemo(() => allDevices.filter(d => d.is_gateway), []);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

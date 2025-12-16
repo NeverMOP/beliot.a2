@@ -34,6 +34,7 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useSearchParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const searchFields: { value: keyof Device; label: string }[] = [
     { value: 'object_name', label: 'Объект' },
@@ -263,7 +264,7 @@ const DESKTOP_COLUMN_VISIBILITY: VisibilityState = {
     latest_data: true,
     gateway: true,
     status: true,
-    created_at: true,
+    last_activity: true,
     actions: true,
 }
 
@@ -277,7 +278,7 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
     latest_data: true,
     gateway: false,
     status: true,
-    created_at: false,
+    last_activity: false,
     actions: true,
 }
 
@@ -301,7 +302,7 @@ function DevicesPageContent() {
 
   React.useEffect(() => {
     const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-    setCurrentDevices(getDevices(companyIdNum));
+    getDevices(companyIdNum).then(setCurrentDevices);
   }, [companyId]);
 
   React.useEffect(() => {
@@ -397,9 +398,18 @@ function DevicesPageContent() {
   );
 }
 
+function DevicesPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
+
 export default function DevicesPage() {
     return (
-        <Suspense fallback={<div>Загрузка...</div>}>
+        <Suspense fallback={<DevicesPageSkeleton />}>
             <DevicesPageContent />
         </Suspense>
     )

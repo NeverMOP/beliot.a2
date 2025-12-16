@@ -40,8 +40,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { allObjects } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { type BeliotObject } from '@/lib/types';
 
 const reportSchema = z.object({
   objectId: z.string().min(1, { message: 'Необходимо выбрать объект' }),
@@ -57,7 +57,7 @@ const reportSchema = z.object({
 
 type ReportFormValues = z.infer<typeof reportSchema>;
 
-export function ReportForm() {
+export function ReportForm({ objects }: { objects: BeliotObject[] }) {
   const { toast } = useToast();
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
@@ -104,7 +104,7 @@ export function ReportForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {allObjects.map((obj) => (
+                        {objects.map((obj) => (
                           <SelectItem key={obj.id} value={String(obj.id)}>
                             {obj.name}
                           </SelectItem>

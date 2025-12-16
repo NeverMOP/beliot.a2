@@ -32,6 +32,7 @@ const chartConfig = {
 
 export function DeviceStatusChart({ devices }: { devices: Device[] }) {
   const chartData = React.useMemo(() => {
+    if (!devices) return [];
     const statusData = devices.reduce((acc, device) => {
       acc[device.status] = (acc[device.status] || 0) + 1;
       return acc;

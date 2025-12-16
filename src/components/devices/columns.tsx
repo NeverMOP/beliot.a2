@@ -1,7 +1,7 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { type Device } from "@/lib/types"
+import { type Device, type Reading } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -83,6 +83,74 @@ const ActionsCell = ({ row }: { row: any }) => {
     )
 }
 
+const LatestDataCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [latestReading, setLatestReading] = React.useState<Reading | undefined>(undefined);
+
+    React.useEffect(() => {
+        getReadingsForDevice(device.id).then(readings => {
+            setLatestReading(readings[readings.length - 1]);
+        });
+    }, [device.id]);
+
+    if (!latestReading) {
+        return <span className="text-muted-foreground">N/A</span>;
+    }
+
+    let value, unit;
+    if (device.type === 'water' && latestReading.in1) {
+        value = latestReading.in1.toFixed(2);
+        unit = device.unit_volume;
+    } else if (device.type === 'heat' && latestReading.energy) {
+        value = latestReading.energy.toFixed(2);
+        unit = device.unit_energy;
+    } else {
+        return <span className="text-muted-foreground">N/A</span>;
+    }
+
+    return <span>{value} {unit}</span>;
+}
+
+const LastActivityCell = ({ row }: { row: any }) => {
+    const [lastReading, setLastReading] = React.useState<Reading | null>(null);
+
+    React.useEffect(() => {
+        getReadingsForDevice(row.original.id).then(readings => {
+            setLastReading(readings[readings.length - 1] || null);
+        });
+    }, [row.original.id]);
+
+    if (!lastReading) {
+        return <span className="text-muted-foreground">N/A</span>;
+    }
+    return format(new Date(lastReading.time), 'dd.MM.yyyy HH:mm');
+}
+
+const GatewayCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [gateway, setGateway] = React.useState<Device | undefined>(undefined);
+
+    React.useEffect(() => {
+        if (device.is_gateway) return;
+        getGatewayForDevice(device).then(setGateway);
+    }, [device]);
+
+    if (device.is_gateway) {
+        return null;
+    }
+    if (!gateway) {
+        return <span className="text-muted-foreground">-</span>;
+    }
+    return (
+        <Link 
+            href={`/gateways?search_field=serial_number&search_value=${gateway.serial_number}`} 
+            className="text-primary hover:underline"
+        >
+            {gateway.serial_number}
+        </Link>
+    )
+}
+
 export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: "id",
@@ -147,50 +215,12 @@ export const columns: ColumnDef<Device>[] = [
   {
     id: "latest_data",
     header: "Последние данные",
-    cell: ({ row }) => {
-      const device = row.original;
-      const readings = getReadingsForDevice(device.id);
-      const latestReading = readings[readings.length - 1];
-
-      if (!latestReading) {
-        return <span className="text-muted-foreground">N/A</span>;
-      }
-
-      let value, unit;
-      if (device.type === 'water' && latestReading.in1) {
-        value = latestReading.in1.toFixed(2);
-        unit = device.unit_volume;
-      } else if (device.type === 'heat' && latestReading.energy) {
-        value = latestReading.energy.toFixed(2);
-        unit = device.unit_energy;
-      } else {
-         return <span className="text-muted-foreground">N/A</span>;
-      }
-
-      return <span>{value} {unit}</span>;
-    },
+    cell: LatestDataCell,
   },
   {
     id: 'gateway',
     header: 'Шлюз',
-    cell: ({ row }) => {
-        const device = row.original;
-        if (device.is_gateway) {
-            return null;
-        }
-        const gateway = getGatewayForDevice(device);
-        if (!gateway) {
-            return <span className="text-muted-foreground">-</span>;
-        }
-        return (
-            <Link 
-                href={`/gateways?search_field=serial_number&search_value=${gateway.serial_number}`} 
-                className="text-primary hover:underline"
-            >
-                {gateway.serial_number}
-            </Link>
-        )
-    },
+    cell: GatewayCell,
   },
   {
     accessorKey: "status",
@@ -213,25 +243,8 @@ export const columns: ColumnDef<Device>[] = [
           </Button>
         )
       },
-    cell: ({row}) => {
-        const readings = getReadingsForDevice(row.original.id);
-        const lastReading = readings[readings.length - 1];
-        if (!lastReading) {
-            return <span className="text-muted-foreground">N/A</span>
-        }
-        return format(new Date(lastReading.time), 'dd.MM.yyyy HH:mm');
-    },
-     sortingFn: (rowA, rowB, columnId) => {
-      const readingsA = getReadingsForDevice(rowA.original.id);
-      const lastReadingA = readingsA[readingsA.length - 1];
-      const timeA = lastReadingA ? new Date(lastReadingA.time).getTime() : 0;
-
-      const readingsB = getReadingsForDevice(rowB.original.id);
-      const lastReadingB = readingsB[readingsB.length - 1];
-      const timeB = lastReadingB ? new Date(lastReadingB.time).getTime() : 0;
-      
-      return timeA - timeB;
-    },
+    cell: LastActivityCell,
+     sortingFn: 'datetime', // Use built-in tanstack table sorting function
   },
   {
     id: "actions",

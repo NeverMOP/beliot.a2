@@ -6,16 +6,21 @@ import { type Device } from '@/lib/types';
 import React from 'react';
 
 export function SummaryCards({ devices }: { devices: Device[] }) {
-  const totalDevices = devices.length;
-  const onlineDevices = devices.filter((d) => d.status === 'online').length;
-  const offlineDevices = devices.filter((d) => d.status === 'offline').length;
-  const warningDevices = devices.filter((d) => d.status === 'warning').length;
+  const summary = React.useMemo(() => {
+      if (!devices) return { total: 0, online: 0, offline: 0, warning: 0 };
+      return {
+          total: devices.length,
+          online: devices.filter((d) => d.status === 'online').length,
+          offline: devices.filter((d) => d.status === 'offline').length,
+          warning: devices.filter((d) => d.status === 'warning').length,
+      }
+  }, [devices]);
 
   const summaries = [
-    { title: 'Всего устройств', value: totalDevices, icon: CircuitBoard, color: 'text-muted-foreground', href: '/devices' },
-    { title: 'Онлайн', value: onlineDevices, icon: CheckCircle, color: 'text-[hsl(var(--chart-1))]', href: '/devices?status=online' },
-    { title: 'Офлайн', value: offlineDevices, icon: XCircle, color: 'text-muted-foreground', href: '/devices?status=offline' },
-    { title: 'Предупреждения', value: warningDevices, icon: AlertTriangle, color: 'text-destructive', href: '/devices?status=warning' },
+    { title: 'Всего устройств', value: summary.total, icon: CircuitBoard, color: 'text-muted-foreground', href: '/devices' },
+    { title: 'Онлайн', value: summary.online, icon: CheckCircle, color: 'text-[hsl(var(--chart-1))]', href: '/devices?status=online' },
+    { title: 'Офлайн', value: summary.offline, icon: XCircle, color: 'text-muted-foreground', href: '/devices?status=offline' },
+    { title: 'Предупреждения', value: summary.warning, icon: AlertTriangle, color: 'text-destructive', href: '/devices?status=warning' },
   ];
 
   return (

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Suspense } from 'react';
-import { devices } from '@/lib/data';
+import { getDevices } from '@/lib/data';
 import { DataTable } from '@/components/devices/data-table';
 import { useGatewayColumns } from '@/components/gateways/columns';
 import { CreateGatewayForm } from '@/components/gateways/create-gateway-form';
@@ -16,15 +16,22 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { useSearchParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function GatewaysPageContent() {
     const searchParams = useSearchParams();
     const searchFieldFromUrl = searchParams.get('search_field') as keyof Device | null;
     const searchValueFromUrl = searchParams.get('search_value');
 
-    const gateways = React.useMemo(() => devices.filter((device) => device.is_gateway), []);
+    const [gateways, setGateways] = React.useState<Device[]>([]);
     const columns = useGatewayColumns();
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
+    React.useEffect(() => {
+        getDevices().then(allDevices => {
+            setGateways(allDevices.filter(d => d.is_gateway));
+        });
+    }, []);
 
     React.useEffect(() => {
         if (searchFieldFromUrl && searchValueFromUrl) {
@@ -63,9 +70,18 @@ function GatewaysPageContent() {
     );
 }
 
+function GatewaysPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
+
 export default function GatewaysPage() {
   return (
-    <Suspense fallback={<div>Загрузка...</div>}>
+    <Suspense fallback={<GatewaysPageSkeleton />}>
       <GatewaysPageContent />
     </Suspense>
   )

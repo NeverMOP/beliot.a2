@@ -22,7 +22,11 @@ function CompaniesPageContent() {
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
     React.useEffect(() => {
-        setData(getCompaniesTree());
+        const fetchData = async () => {
+            const tree = await getCompaniesTree();
+            setData(tree);
+        };
+        fetchData();
     }, []);
 
     const columns = React.useMemo(() => companyColumns, []);

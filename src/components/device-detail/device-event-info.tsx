@@ -38,8 +38,7 @@ const getEventDetails = (device: Device, latestReading: Reading | undefined): { 
   return null; // No active event
 };
 
-export function DeviceEventInfo({ device }: { device: Device }) {
-    const readings = getReadingsForDevice(device.id);
+export function DeviceEventInfo({ device, readings }: { device: Device, readings: Reading[] }) {
     const latestReading = readings.length > 0 ? readings[readings.length - 1] : undefined;
     const eventDetails = getEventDetails(device, latestReading);
 

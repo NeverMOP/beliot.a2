@@ -1,6 +1,6 @@
 'use client'
 
-import { getObjectsTree, getDevices, allObjects as allObjectsData } from "@/lib/data";
+import { getObjectsTree, getAllObjects, getDevices } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns as objectColumns } from "@/components/objects/columns";
 import { CreateObjectForm } from "@/components/objects/create-object-form";
@@ -18,6 +18,7 @@ import {
 import { ObjectDeviceList } from "@/components/objects/object-device-list";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function ObjectsPageContent() {
     const searchParams = useSearchParams();
@@ -25,22 +26,22 @@ function ObjectsPageContent() {
     const selectedObjectIdFromUrl = searchParams.get('selected_object_id');
 
     const [data, setData] = React.useState<BeliotObject[]>([]);
+    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
+    const [allDevices, setAllDevices] = React.useState<Device[]>([]);
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
     const [selectedObject, setSelectedObject] = React.useState<BeliotObject | null>(null);
     const [devicesInSelectedObject, setDevicesInSelectedObject] = React.useState<Device[]>([]);
 
     const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-    const allDevicesForContext = React.useMemo(() => getDevices(companyIdNum), [companyIdNum]);
-    const allObjectsForContext = React.useMemo(() => allObjectsData, []);
     
     // Helper function to recursively get all devices from an object and its children
-    const getAllDevices = React.useCallback((object: BeliotObject): Device[] => {
-        let objectDevices = allDevicesForContext.filter(d => d.objectId === object.id);
+    const getAllDevicesForObject = React.useCallback((object: BeliotObject, allDevs: Device[]): Device[] => {
+        let objectDevices = allDevs.filter(d => d.objectId === object.id);
         if (object.children && object.children.length > 0) {
-            objectDevices = objectDevices.concat(object.children.flatMap(getAllDevices));
+            objectDevices = objectDevices.concat(object.children.flatMap(child => getAllDevicesForObject(child, allDevs)));
         }
         return objectDevices;
-    }, [allDevicesForContext]);
+    }, []);
 
     // Helper to find an object and its path in a tree
     const findObjectInTree = (nodes: BeliotObject[], id: number): BeliotObject | null => {
@@ -55,47 +56,56 @@ function ObjectsPageContent() {
     };
 
     // Helper to get all parent IDs of a given object
-    const getParentIds = (allObjects: BeliotObject[], objectId: number): number[] => {
+    const getParentIds = (allObjs: BeliotObject[], objectId: number): number[] => {
         const ids: number[] = [];
-        let current = allObjects.find(o => o.id === objectId);
+        let current = allObjs.find(o => o.id === objectId);
         while (current && current.parentId) {
             ids.push(current.parentId);
-            current = allObjects.find(o => o.id === current.parentId);
+            current = allObjs.find(o => o.id === current.parentId);
         }
         return ids;
     };
-
-
+    
     React.useEffect(() => {
-        setData(getObjectsTree(companyIdNum));
+        const fetchData = async () => {
+            const [tree, objects, devices] = await Promise.all([
+                getObjectsTree(companyIdNum),
+                getAllObjects(),
+                getDevices(companyIdNum),
+            ]);
+            setData(tree);
+            setAllObjects(objects);
+            setAllDevices(devices);
+        }
+        fetchData();
     }, [companyIdNum]);
     
      React.useEffect(() => {
-        if (selectedObjectIdFromUrl) {
+        if (selectedObjectIdFromUrl && data.length > 0 && allObjects.length > 0) {
             const objectId = parseInt(selectedObjectIdFromUrl, 10);
             const foundObject = findObjectInTree(data, objectId);
             if (foundObject) {
                 setSelectedObject(foundObject);
                 // Expand all parents of the selected object to make it visible
-                const parentIds = getParentIds(allObjectsForContext, objectId);
+                const parentIds = getParentIds(allObjects, objectId);
                 const newExpanded: ExpandedState = {};
                 parentIds.forEach(id => {
-                    newExpanded[id] = true;
+                    newExpanded[String(id)] = true;
                 });
                 setExpanded(newExpanded);
             }
         }
-    }, [selectedObjectIdFromUrl, data, allObjectsForContext]);
+    }, [selectedObjectIdFromUrl, data, allObjects]);
 
 
     React.useEffect(() => {
         if (selectedObject) {
-            const devicesToShow = getAllDevices(selectedObject);
+            const devicesToShow = getAllDevicesForObject(selectedObject, allDevices);
             setDevicesInSelectedObject(devicesToShow);
         } else {
             setDevicesInSelectedObject([]);
         }
-    }, [selectedObject, getAllDevices]);
+    }, [selectedObject, allDevices, getAllDevicesForObject]);
 
 
     const handleRowClick = (row: Row<BeliotObject>) => {
@@ -110,6 +120,7 @@ function ObjectsPageContent() {
         state: {
           expanded,
         },
+        getRowId: (row) => String(row.id),
         onExpandedChange: setExpanded,
         getSubRows: row => row.children,
         getCoreRowModel: getCoreRowModel(),
@@ -144,9 +155,21 @@ function ObjectsPageContent() {
   );
 }
 
+function ObjectsPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        </div>
+    )
+}
+
 export default function ObjectsPage() {
     return (
-        <Suspense fallback={<div>Загрузка...</div>}>
+        <Suspense fallback={<ObjectsPageSkeleton />}>
             <ObjectsPageContent />
         </Suspense>
     )

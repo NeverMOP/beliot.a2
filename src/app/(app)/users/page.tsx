@@ -15,6 +15,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { type User } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function UsersPageContent() {
     const searchParams = useSearchParams();
@@ -23,7 +24,7 @@ function UsersPageContent() {
 
     React.useEffect(() => {
         const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-        setCurrentUsers(getUsers(companyIdNum));
+        getUsers(companyIdNum).then(setCurrentUsers);
     }, [companyId]);
 
    const table = useReactTable({
@@ -49,9 +50,18 @@ function UsersPageContent() {
   );
 }
 
+function UsersPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
+
 export default function UsersPage() {
     return (
-        <Suspense fallback={<div>Загрузка...</div>}>
+        <Suspense fallback={<UsersPageSkeleton />}>
             <UsersPageContent />
         </Suspense>
     )

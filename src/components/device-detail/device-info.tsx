@@ -1,8 +1,7 @@
-import { type Device } from '@/lib/types';
+import { type Device, type Reading } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Battery, Rss, Signal, Clock, Hash, Package, GripVertical, Paperclip } from 'lucide-react';
-import { getReadingsForDevice } from '@/lib/data';
 import { Separator } from '../ui/separator';
 
 const getStatusVariant = (status: 'online' | 'offline' | 'warning'): "default" | "destructive" | "secondary" => {
@@ -24,8 +23,8 @@ const statusRussian: Record<string, string> = {
     warning: 'Предупреждение'
 }
 
-export function DeviceInfo({ device }: { device: Device }) {
-    const latestReading = getReadingsForDevice(device.id).pop();
+export function DeviceInfo({ device, readings }: { device: Device, readings: Reading[] }) {
+    const latestReading = readings[readings.length - 1];
 
   return (
     <Card>
