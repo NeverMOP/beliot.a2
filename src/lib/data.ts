@@ -35,7 +35,7 @@ export let devices: Device[] = [
   {
     id: 2,
     external_id: '9H8G7F6E5D4C3B2A',
-    serial_number: 'SN-002-B',
+    serial_number: 'SN-GW-002-B',
     type: 'heat',
     model: 'Beliot Gateway v1',
     channel_type: 'gsm',
@@ -106,7 +106,7 @@ export let devices: Device[] = [
   {
     id: 6,
     external_id: 'LORAWAN-DEVICE-001',
-    serial_number: 'SN-006-F',
+    serial_number: 'SN-GW-006-F',
     type: 'heat',
     model: 'LoRaMaster-3000',
     channel_type: 'lora',
@@ -242,6 +242,16 @@ const calculateObjectDeviceCounts = (): BeliotObject[] => {
     });
 
     devices.forEach(device => {
+        // Find the top-level parent object for the device
+        let parentId = device.objectId;
+        let currentObject = initialObjects.find(o => o.id === parentId);
+        while (currentObject && currentObject.parentId) {
+            currentObject = initialObjects.find(o => o.id === currentObject.parentId);
+            if (currentObject) {
+                parentId = currentObject.id;
+            }
+        }
+
         const obj = objectsWithCounts.get(device.objectId);
         if (obj) {
             obj.deviceCount++;
@@ -273,6 +283,9 @@ export function getObjectsTree(): BeliotObject[] {
     const current = objectsById.get(obj.id)!;
     if (obj.parentId && objectsById.has(obj.parentId)) {
       const parent = objectsById.get(obj.parentId)!;
+      if (!parent.children) {
+        parent.children = [];
+      }
       parent.children.push(current);
 
       // Aggregate counts up to the parent
@@ -353,3 +366,20 @@ export const getDeviceById = (id: number): Device | undefined =>
 
 export const getReadingsForDevice = (deviceId: number): Reading[] =>
   readings.filter((r) => r.device_id === deviceId);
+
+export const getGatewayForDevice = (device: Device): Device | undefined => {
+    if (device.is_gateway || !device.objectId) {
+        return undefined;
+    }
+    // Find the gateway that is on the same object or a parent object.
+    let currentObjectId: number | undefined | null = device.objectId;
+    while (currentObjectId) {
+        const gateway = devices.find(d => d.is_gateway && d.objectId === currentObjectId);
+        if (gateway) {
+            return gateway;
+        }
+        const currentObject = initialObjects.find(o => o.id === currentObjectId);
+        currentObjectId = currentObject?.parentId;
+    }
+    return undefined;
+};
