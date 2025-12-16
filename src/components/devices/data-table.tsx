@@ -115,17 +115,15 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => {
-                      if (onRowClick) {
-                          onRowClick(row);
-                      }
-                  }}
+                  onClick={() => onRowClick?.(row)}
                   className={ onRowClick ? "cursor-pointer" : "" }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} onClick={e => {
-                        // Prevent row click from firing when clicking on dropdown menu
-                        if (cell.column.id === 'actions') {
+                        // Prevent row click from firing when clicking on a cell that has its own click handler,
+                        // like a dropdown menu.
+                        const originalOnClick = (cell.column.columnDef.cell as any)?.props?.onClick;
+                        if (originalOnClick || cell.column.id === 'actions') {
                             e.stopPropagation();
                         }
                     }}>

@@ -187,30 +187,10 @@ export const columns: ColumnDef<Device>[] = [
     },
   },
   {
-    id: 'last_activity',
-    accessorFn: (row) => {
-        const readings = getReadingsForDevice(row.id);
-        const latestReading = readings[readings.length - 1];
-        return latestReading ? new Date(latestReading.time).getTime() : 0;
-    },
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Последняя активность
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-        const readings = getReadingsForDevice(row.original.id);
-        const latestReading = readings[readings.length - 1];
-        if (!latestReading) {
-            return <span className="text-muted-foreground">N/A</span>;
-        }
-        return format(new Date(latestReading.time), 'dd.MM.yyyy HH:mm');
+    accessorKey: "created_at",
+    header: "Дата создания",
+    cell: ({row}) => {
+        return new Date(row.original.created_at).toLocaleDateString()
     },
   },
   {
