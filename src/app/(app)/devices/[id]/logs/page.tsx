@@ -63,7 +63,7 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Сырые данные (логи) устройства</CardTitle>
+          <CardTitle>Логи устройства</CardTitle>
           <CardDescription>
             Отображены последние {Math.min(MAX_LOGS, allReadings.length)} записей для устройства <strong>{device.serial_number}</strong>.
           </CardDescription>
