@@ -11,7 +11,7 @@ import { DateRangePicker } from "../shared/date-range-picker";
 import { type DateRange } from "react-day-picker";
 import { subDays } from "date-fns";
 import { DeviceEventInfo } from "./device-event-info";
-import { CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
 
 export function DeviceReadings({
   device,
@@ -20,25 +20,32 @@ export function DeviceReadings({
   device: Device;
   readings: Reading[];
 }) {
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+  // State for the date picker itself
+  const [date, setDate] = React.useState<DateRange | undefined>({
     from: subDays(new Date(), 7),
     to: new Date(),
   });
   
+  // State for the applied filter
+  const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(date);
+
+  const handleApplyFilter = () => {
+    setAppliedDateRange(date);
+  };
+
   const filteredReadings = React.useMemo(() => {
-    if (!dateRange?.from) { // Only 'from' is needed to start filtering
+    if (!appliedDateRange?.from) {
         return readings;
     }
-    const fromDate = dateRange.from;
-    // If only 'from' is selected, 'to' is the same day.
-    const toDate = new Date(dateRange.to || dateRange.from);
-    toDate.setHours(23, 59, 59, 999); // Set to the end of the day
+    const fromDate = appliedDateRange.from;
+    const toDate = new Date(appliedDateRange.to || appliedDateRange.from);
+    toDate.setHours(23, 59, 59, 999); 
 
     return readings.filter(reading => {
         const readingDate = new Date(reading.time);
         return readingDate >= fromDate && readingDate <= toDate;
     });
-  }, [readings, dateRange]);
+  }, [readings, appliedDateRange]);
 
 
   const columns = readingsColumns(device);
@@ -50,24 +57,20 @@ export function DeviceReadings({
                 <DeviceEventInfo device={device} />
             </div>
             <div className="lg:col-span-2 space-y-4">
-                 <DateRangePicker 
-                    dateRange={dateRange} 
-                    setDateRange={setDateRange} 
-                    className="w-full sm:w-auto"
-                />
+                 <div className="flex flex-col sm:flex-row gap-2 items-start">
+                    <DateRangePicker 
+                        dateRange={date} 
+                        setDateRange={setDate} 
+                        className="w-full sm:w-auto"
+                    />
+                    <Button onClick={handleApplyFilter}>Применить</Button>
+                </div>
                 <ReadingsCharts device={device} readings={filteredReadings} />
             </div>
         </div>
         <ReadingsTable 
             columns={columns} 
             data={filteredReadings} 
-            dateRangeComponent={
-                <DateRangePicker
-                    dateRange={dateRange}
-                    setDateRange={setDateRange}
-                    className="w-full sm:w-auto"
-                />
-            }
         />
     </>
   );

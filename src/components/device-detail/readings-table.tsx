@@ -41,13 +41,11 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
-  dateRangeComponent: React.ReactNode,
 }
 
 export function ReadingsTable<TData, TValue>({
   columns,
   data,
-  dateRangeComponent
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "time", desc: true },
@@ -75,10 +73,9 @@ export function ReadingsTable<TData, TValue>({
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                  <CardTitle>История показаний</CardTitle>
-                 <CardDescription className="pt-1">Выберите период для просмотра данных в таблице.</CardDescription>
+                 <CardDescription className="pt-1">Данные за выбранный период.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-                {dateRangeComponent}
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="ml-auto">
