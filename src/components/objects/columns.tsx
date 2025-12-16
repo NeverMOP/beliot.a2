@@ -6,7 +6,7 @@ import { type ColumnDef, type Row } from "@tanstack/react-table"
 import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, ChevronsRight, Eye } from "lucide-react"
+import { Menu, ChevronsRight, Eye } from "lucide-react"
 import { EditForm } from "../shared/edit-form"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
@@ -61,7 +61,7 @@ const ActionsCell = ({ row }: { row: any }) => {
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
                         <span className="sr-only">Открыть меню</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                        <Menu className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

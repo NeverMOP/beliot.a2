@@ -5,7 +5,7 @@ import { type ColumnDef } from "@tanstack/react-table"
 import { type Device } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, GitBranch } from "lucide-react"
+import { Menu, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { EditForm } from "../shared/edit-form";
 
@@ -26,7 +26,7 @@ const ActionsCell = ({ row }: { row: any }) => {
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
                         <span className="sr-only">Открыть меню</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                        <Menu className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
