@@ -11,6 +11,7 @@ import { DateRangePicker } from "../shared/date-range-picker";
 import { type DateRange } from "react-day-picker";
 import { subDays } from "date-fns";
 import { DeviceEventInfo } from "./device-event-info";
+import { CardHeader, CardTitle } from "../ui/card";
 
 export function DeviceReadings({
   device,
@@ -30,11 +31,11 @@ export function DeviceReadings({
     }
     const fromDate = dateRange.from;
     // If only 'from' is selected, 'to' is the same day.
-    const toDate = dateRange.to || dateRange.from;
+    const toDate = new Date(dateRange.to || dateRange.from);
+    toDate.setHours(23, 59, 59, 999); // Set to the end of the day
 
     return readings.filter(reading => {
         const readingDate = new Date(reading.time);
-        // Compare dates only, ignoring time part for start and end
         return readingDate >= fromDate && readingDate <= toDate;
     });
   }, [readings, dateRange]);
@@ -57,7 +58,20 @@ export function DeviceReadings({
                 <ReadingsCharts device={device} readings={filteredReadings} />
             </div>
         </div>
-        <ReadingsTable columns={columns} data={filteredReadings} />
+        <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+                 <div className="pb-4 sm:pb-0">
+                     <h3 className="text-lg font-semibold leading-none tracking-tight">История показаний</h3>
+                     <p className="text-sm text-muted-foreground pt-1">Выберите период для просмотра данных в таблице.</p>
+                 </div>
+                 <DateRangePicker
+                    dateRange={dateRange}
+                    setDateRange={setDateRange}
+                    className="w-full sm:w-auto"
+                 />
+            </div>
+            <ReadingsTable columns={columns} data={filteredReadings} />
+        </div>
     </>
   );
 }
