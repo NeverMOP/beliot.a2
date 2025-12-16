@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { type BeliotObject, type Device } from "@/lib/types";
 import { objects as allObjects, devices as allDevices } from "@/lib/data";
+import { Label } from "@/components/ui/label";
 
 type Entity = BeliotObject | Device;
 type EntityName = "object" | "device" | "gateway";
