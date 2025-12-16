@@ -1,3 +1,4 @@
+
 "use client";
 
 import { type Device, type Reading } from "@/lib/types";
@@ -9,6 +10,7 @@ import * as React from 'react';
 import { DateRangePicker } from "../shared/date-range-picker";
 import { type DateRange } from "react-day-picker";
 import { subDays } from "date-fns";
+import { DeviceEventInfo } from "./device-event-info";
 
 export function DeviceReadings({
   device,
@@ -42,8 +44,9 @@ export function DeviceReadings({
   return (
     <>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-6">
                 <DeviceInfo device={device} />
+                <DeviceEventInfo device={device} />
             </div>
             <div className="lg:col-span-2 space-y-4">
                  <DateRangePicker 
