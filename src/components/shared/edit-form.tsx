@@ -69,30 +69,39 @@ const schemas = {
   gateway: gatewaySchema
 };
 
-const defaultValues = {
-    object: (entity: BeliotObject) => ({
-        name: entity.name,
-        address: entity.address,
-        objectType: entity.objectType
-    }),
-    device: (entity: Device) => ({
-        external_id: entity.external_id,
-        serial_number: entity.serial_number,
-        model: entity.model,
-        channel_type: entity.channel_type,
-        object_name: entity.object_name,
-        address: entity.address,
-        type: entity.type
-    }),
-    gateway: (entity: Device) => ({
-        external_id: entity.external_id,
-        serial_number: entity.serial_number,
-        model: entity.model,
-        channel_type: entity.channel_type,
-        object_name: entity.object_name,
-        address: entity.address,
-    })
+const getFormDefaultValues = (entityName: EntityName, entity: Entity) => {
+    switch (entityName) {
+        case 'object':
+            const obj = entity as BeliotObject;
+            return {
+                name: obj.name,
+                address: obj.address,
+                objectType: obj.objectType
+            };
+        case 'device':
+            const dev = entity as Device;
+            return {
+                external_id: dev.external_id,
+                serial_number: dev.serial_number,
+                model: dev.model,
+                channel_type: dev.channel_type,
+                object_name: dev.object_name,
+                address: dev.address,
+                type: dev.type
+            };
+        case 'gateway':
+             const gw = entity as Device;
+             return {
+                external_id: gw.external_id,
+                serial_number: gw.serial_number,
+                model: gw.model,
+                channel_type: gw.channel_type,
+                object_name: gw.object_name,
+                address: gw.address
+            };
+    }
 }
+
 
 interface EditFormProps {
   entity: Entity;
@@ -107,17 +116,15 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
   const schema = schemas[entityName];
   // @ts-ignore
   const form = useForm({
-    // @ts-ignore
     resolver: zodResolver(schema),
   });
 
   React.useEffect(() => {
-    if (isOpen && entity) {
-        // @ts-ignore
-        const values = defaultValues[entityName](entity);
-        form.reset(values);
+    if (entity && isOpen) {
+        const defaultValues = getFormDefaultValues(entityName, entity);
+        form.reset(defaultValues);
     }
-  }, [isOpen, entity, entityName, form]);
+  }, [entity, entityName, isOpen, form]);
 
   function onSubmit(data: z.infer<typeof schema>) {
     console.log("Updating entity:", data);
