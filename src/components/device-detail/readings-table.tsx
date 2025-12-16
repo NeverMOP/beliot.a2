@@ -75,39 +75,6 @@ export function ReadingsTable<TData, TValue>({
                  <CardTitle>История показаний</CardTitle>
                  <CardDescription className="pt-1">Данные за выбранный период.</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-                <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="ml-auto">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Колонки
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                    {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => {
-                        const header = column.columnDef.header;
-                        const headerText = typeof header === 'string' ? header : column.id;
-                        return (
-                        <DropdownMenuCheckboxItem
-                            key={column.id}
-                            className="capitalize"
-                            checked={column.getIsVisible()}
-                            onCheckedChange={(value) =>
-                            column.toggleVisibility(!!value)
-                            }
-                        >
-                            {headerText}
-                        </DropdownMenuCheckboxItem>
-                        )
-                    })}
-                </DropdownMenuContent>
-            </DropdownMenu>
-            </div>
         </CardHeader>
         <CardContent>
             <div className="relative">
@@ -127,6 +94,38 @@ export function ReadingsTable<TData, TValue>({
                             </TableHead>
                         )
                         })}
+                         <TableHead className="text-right">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Settings className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                    {table
+                                    .getAllColumns()
+                                    .filter((column) => column.getCanHide())
+                                    .map((column) => {
+                                        const header = column.columnDef.header;
+                                        const headerText = typeof header === 'string' ? header : column.id;
+                                        return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                            column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {headerText}
+                                        </DropdownMenuCheckboxItem>
+                                        )
+                                    })}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableHead>
                     </TableRow>
                     ))}
                 </TableHeader>
@@ -142,11 +141,13 @@ export function ReadingsTable<TData, TValue>({
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </TableCell>
                         ))}
+                        {/* Empty cell for the settings column */}
+                        <TableCell />
                         </TableRow>
                     ))
                     ) : (
                     <TableRow>
-                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                        <TableCell colSpan={columns.length + 1} className="h-24 text-center">
                         Нет результатов.
                         </TableCell>
                     </TableRow>

@@ -52,43 +52,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <Card>
-      {!isMobile && table.getAllColumns().some(c => c.getCanHide()) && (
-        <div className="flex items-center justify-end p-4 gap-4">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="ml-auto">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Колонки
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                    {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => {
-                        const header = column.columnDef.header;
-                        // Use header if it's a string, otherwise fallback to column id.
-                        // This avoids trying to render a functional component without proper props.
-                        const headerText = typeof header === 'string' ? header : column.id;
-                        return (
-                        <DropdownMenuCheckboxItem
-                            key={column.id}
-                            className="capitalize"
-                            checked={column.getIsVisible()}
-                            onCheckedChange={(value) =>
-                            column.toggleVisibility(!!value)
-                            }
-                        >
-                            {headerText}
-                        </DropdownMenuCheckboxItem>
-                        )
-                    })}
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      )}
       <div className="relative">
         <Table>
           <TableHeader>
@@ -106,6 +69,40 @@ export function DataTable<TData, TValue>({
                     </TableHead>
                   )
                 })}
+                 {!isMobile && table.getAllColumns().some(c => c.getCanHide()) && (
+                    <TableHead className="text-right">
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Settings className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                                {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    const header = column.columnDef.header;
+                                    const headerText = typeof header === 'string' ? header : column.id;
+                                    return (
+                                    <DropdownMenuCheckboxItem
+                                        key={column.id}
+                                        className="capitalize"
+                                        checked={column.getIsVisible()}
+                                        onCheckedChange={(value) =>
+                                        column.toggleVisibility(!!value)
+                                        }
+                                    >
+                                        {headerText}
+                                    </DropdownMenuCheckboxItem>
+                                    )
+                                })}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableHead>
+                 )}
               </TableRow>
             ))}
           </TableHeader>
@@ -119,14 +116,7 @@ export function DataTable<TData, TValue>({
                   className={ onRowClick ? "cursor-pointer" : "" }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} onClick={e => {
-                        // Prevent row click from firing when clicking on a cell that has its own click handler,
-                        // like a dropdown menu.
-                        const originalOnClick = (cell.column.columnDef as any)?.cell?.props?.onClick;
-                        if (originalOnClick || cell.column.id === 'actions') {
-                            e.stopPropagation();
-                        }
-                    }}>
+                    <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
