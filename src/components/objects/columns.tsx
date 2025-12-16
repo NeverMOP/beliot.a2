@@ -127,16 +127,6 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
     )
   },
   {
-    accessorKey: "objectType",
-    header: "Тип объекта",
-    cell: ({ row }) => {
-      const type = row.getValue("objectType") as BeliotObject['objectType'];
-      return <div>
-        <span>{objectTypeRussian[type]}</span>
-      </div>
-    }
-  },
-  {
     accessorKey: "deviceCount",
     header: "Устройства",
     cell: ({ row }) => <div>
