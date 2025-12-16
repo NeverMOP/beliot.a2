@@ -8,7 +8,7 @@ import { columns as allColumns } from '@/components/devices/columns';
 import { CreateDeviceForm } from '@/components/devices/create-device-form';
 import { Button } from '@/components/ui/button';
 import { type Device } from '@/lib/types';
-import { List, Droplets, Thermometer, SlidersHorizontal, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { List, Droplets, Thermometer, SlidersHorizontal, CheckCircle, XCircle, AlertTriangle, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -97,8 +97,18 @@ function DesktopControls({
                     placeholder={`Поиск по '${searchFields.find(f => f.value === searchField)?.label}'...`}
                     value={searchValue}
                     onChange={(event) => setSearchValue(event.target.value)}
-                    className="pl-10 w-full"
+                    className="pl-10 pr-10 w-full"
                 />
+                {searchValue && (
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setSearchValue('')}
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                )}
             </div>
             <Select onValueChange={(value) => setSearchField(value as keyof Device)} defaultValue={searchField}>
                 <SelectTrigger className="w-[180px]">
@@ -215,8 +225,18 @@ function MobileControls({
                         placeholder={`Поиск...`}
                         value={searchValue}
                         onChange={(event) => setSearchValue(event.target.value)}
-                        className="pl-10 w-full"
+                        className="pl-10 pr-10 w-full"
                     />
+                    {searchValue && (
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSearchValue('')}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    )}
                 </div>
                 <Select onValueChange={(value) => setSearchField(value as keyof Device)} defaultValue={searchField}>
                     <SelectTrigger>
@@ -241,7 +261,7 @@ const DESKTOP_COLUMN_VISIBILITY: VisibilityState = {
     object_name: true,
     address: true,
     latest_data: true,
-    is_gateway: true,
+    gateway: true,
     status: true,
     created_at: true,
     actions: true,
@@ -255,7 +275,7 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
     object_name: false,
     address: false,
     latest_data: true,
-    is_gateway: false,
+    gateway: false,
     status: true,
     created_at: false,
     actions: true,
@@ -377,3 +397,5 @@ export default function DevicesPage() {
         </Suspense>
     )
 }
+
+    
