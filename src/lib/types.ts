@@ -23,6 +23,14 @@ export type User = {
     role: 'admin' | 'user' | 'viewer';
 }
 
+export type Company = {
+    id: number;
+    name: string;
+    unp: string;
+    parentId?: number | null;
+    children?: Company[];
+};
+
 export type Device = {
   id: number;
   external_id: string;

@@ -1,4 +1,4 @@
-import { type Device, type Reading, type BeliotObject, type User } from './types';
+import { type Device, type Reading, type BeliotObject, type User, type Company } from './types';
 
 export let initialObjects: BeliotObject[] = [
   { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 0, objectType: 'residential' },
@@ -143,6 +143,14 @@ export const users: User[] = [
     { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
     { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user' },
     { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer' },
+];
+
+export const companies: Company[] = [
+    { id: 1, name: 'Управляющая компания "Наш Дом"', unp: '190123456' },
+    { id: 2, name: 'ЖЭС №10', unp: '190123457', parentId: 1 },
+    { id: 3, name: 'ЖЭС №12', unp: '190123458', parentId: 1 },
+    { id: 4, name: 'ООО "Девелопер-Строй"', unp: '190987654' },
+    { id: 5, name: 'ТС "Зеленый квартал"', unp: '190987655', parentId: 4 },
 ];
 
 // --- Generation for the large apartment building ---
@@ -300,6 +308,26 @@ export function getObjectsTree(): BeliotObject[] {
   });
 
   return roots.filter(obj => !obj.parentId || !objectsById.has(obj.parentId));
+}
+
+export function getCompaniesTree(): Company[] {
+  const companiesById = new Map(companies.map(c => [c.id, { ...c, children: [] as Company[] }]));
+  const roots: Company[] = [];
+
+  companies.forEach(company => {
+    const current = companiesById.get(company.id)!;
+    if (company.parentId && companiesById.has(company.parentId)) {
+      const parent = companiesById.get(company.parentId)!;
+      if (!parent.children) {
+        parent.children = [];
+      }
+      parent.children.push(current);
+    } else {
+      roots.push(current);
+    }
+  });
+
+  return roots;
 }
 
 const generateReadings = (

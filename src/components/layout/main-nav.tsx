@@ -10,6 +10,7 @@ import React from 'react';
 
 const mainNavLinks = [
     { href: '/dashboard', label: 'Панель мониторинга' },
+    { href: '/companies', label: 'Компании' },
     { href: '/objects', label: 'Объекты' },
     { href: '/devices', label: 'Устройства' },
     { href: '/gateways', label: 'Шлюзы' },
