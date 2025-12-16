@@ -122,7 +122,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id} onClick={e => {
                         // Prevent row click from firing when clicking on a cell that has its own click handler,
                         // like a dropdown menu.
-                        const originalOnClick = (cell.column.columnDef.cell as any)?.props?.onClick;
+                        const originalOnClick = (cell.column.columnDef as any)?.cell?.props?.onClick;
                         if (originalOnClick || cell.column.id === 'actions') {
                             e.stopPropagation();
                         }

@@ -187,10 +187,36 @@ export const columns: ColumnDef<Device>[] = [
     },
   },
   {
-    accessorKey: "created_at",
-    header: "Дата создания",
+    id: "last_activity",
+    header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Последняя активность
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
     cell: ({row}) => {
-        return new Date(row.original.created_at).toLocaleDateString()
+        const readings = getReadingsForDevice(row.original.id);
+        const lastReading = readings[readings.length - 1];
+        if (!lastReading) {
+            return <span className="text-muted-foreground">N/A</span>
+        }
+        return format(new Date(lastReading.time), 'dd.MM.yyyy HH:mm');
+    },
+     sortingFn: (rowA, rowB, columnId) => {
+      const readingsA = getReadingsForDevice(rowA.original.id);
+      const lastReadingA = readingsA[readingsA.length - 1];
+      const timeA = lastReadingA ? new Date(lastReadingA.time).getTime() : 0;
+
+      const readingsB = getReadingsForDevice(rowB.original.id);
+      const lastReadingB = readingsB[readingsB.length - 1];
+      const timeB = lastReadingB ? new Date(lastReadingB.time).getTime() : 0;
+      
+      return timeA - timeB;
     },
   },
   {

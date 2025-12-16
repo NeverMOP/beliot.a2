@@ -32,73 +32,34 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { type BeliotObject, type Device } from "@/lib/types";
-import { deviceModels, channelTypes, gatewayModels } from "@/lib/catalogs";
+import { objects as allObjects, devices as allDevices } from "@/lib/data";
 
 type Entity = BeliotObject | Device;
 type EntityName = "object" | "device" | "gateway";
 
-const objectSchema = z.object({
-  name: z.string().min(1, "Название обязательно"),
-  address: z.string().min(1, "Адрес обязателен"),
-  objectType: z.enum(['residential', 'business_center', 'mall', 'medical', 'school', 'kindergarten', 'heating_point', 'warehouse']),
-});
-
 const deviceSchema = z.object({
-  external_id: z.string().min(1, "Идентификатор обязателен"),
-  serial_number: z.string().min(1, "Серийный номер обязателен"),
-  model: z.string().min(1, "Модель обязательна"),
-  channel_type: z.string().min(1, "Тип канала обязателен"),
-  object_name: z.string().min(1, "Название объекта обязательно"),
-  address: z.string().min(1, "Адрес обязателен"),
-  type: z.enum(["water", "heat"]),
-});
-
-const gatewaySchema = z.object({
-    external_id: z.string().min(1, "Идентификатор обязателен"),
-    serial_number: z.string().min(1, "Серийный номер обязателен"),
-    model: z.string().min(1, "Модель обязательна"),
-    channel_type: z.string().min(1, "Тип канала обязателен"),
-    object_name: z.string().min(1, "Название объекта обязательно"),
-    address: z.string().min(1, "Адрес обязателен"),
+  objectId: z.string().min(1, "Необходимо выбрать объект"),
+  gatewayId: z.string().optional(),
 });
 
 
 const schemas = {
-  object: objectSchema,
+  // We only support device editing for now as per the request
   device: deviceSchema,
-  gateway: gatewaySchema
 };
 
 const getFormDefaultValues = (entityName: EntityName, entity: Entity) => {
     switch (entityName) {
-        case 'object':
-            const obj = entity as BeliotObject;
-            return {
-                name: obj.name,
-                address: obj.address,
-                objectType: obj.objectType
-            };
         case 'device':
             const dev = entity as Device;
+            // This is a simplified logic, in real app we'd need a more robust way to find the gateway
+            const gateway = allDevices.find(d => d.is_gateway && d.objectId === dev.objectId);
             return {
-                external_id: dev.external_id,
-                serial_number: dev.serial_number,
-                model: dev.model,
-                channel_type: dev.channel_type,
-                object_name: dev.object_name,
-                address: dev.address,
-                type: dev.type
+                objectId: String(dev.objectId),
+                gatewayId: gateway ? String(gateway.id) : undefined,
             };
-        case 'gateway':
-             const gw = entity as Device;
-             return {
-                external_id: gw.external_id,
-                serial_number: gw.serial_number,
-                model: gw.model,
-                channel_type: gw.channel_type,
-                object_name: gw.object_name,
-                address: gw.address
-            };
+        default:
+            return {};
     }
 }
 
@@ -113,9 +74,17 @@ interface EditFormProps {
 export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormProps) {
   const { toast } = useToast();
   
+  if (entityName !== 'device') {
+    // Silently return null if we are not editing a device, to avoid crashes.
+    // In a real app we might show a "not implemented" message.
+    return null;
+  }
+  
   const schema = schemas[entityName];
+  const device = entity as Device;
+
   // @ts-ignore
-  const form = useForm({
+  const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
   });
 
@@ -130,143 +99,83 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
     console.log("Updating entity:", data);
     toast({
       title: "Данные обновлены",
-      description: `Информация была успешно обновлена.`,
+      description: `Информация для устройства ${device.serial_number} была успешно обновлена.`,
     });
     onOpenChange(false);
   }
-
-  const renderFormFields = () => {
-    switch(entityName) {
-        case 'object':
-            return (
-                <>
-                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Название</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="address" render={({ field }) => ( <FormItem> <FormLabel>Адрес</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="objectType" render={({ field }) => (
-                         <FormItem>
-                            <FormLabel>Тип объекта</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Выберите тип объекта"/></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="residential">Жилой дом</SelectItem>
-                                    <SelectItem value="business_center">Бизнес-центр</SelectItem>
-                                    <SelectItem value="mall">Торговый центр</SelectItem>
-                                    <SelectItem value="medical">Мед. учреждение</SelectItem>
-                                    <SelectItem value="school">Школа</SelectItem>
-                                    <SelectItem value="kindergarten">Детский сад</SelectItem>
-                                    <SelectItem value="heating_point">Тепловой пункт</SelectItem>
-                                    <SelectItem value="warehouse">Склад</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                </>
-            )
-        case 'device':
-            return (
-                <>
-                    <FormField control={form.control} name="external_id" render={({ field }) => ( <FormItem> <FormLabel>Идентификатор</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="serial_number" render={({ field }) => ( <FormItem> <FormLabel>Серийный номер</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="model" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Модель</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Выберите модель"/></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>{deviceModels.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="object_name" render={({ field }) => ( <FormItem> <FormLabel>Объект</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="address" render={({ field }) => ( <FormItem> <FormLabel>Адрес</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                     <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="type" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Тип</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger><SelectValue placeholder="Выберите тип"/></SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="water">Вода</SelectItem>
-                                        <SelectItem value="heat">Тепло</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                         <FormField control={form.control} name="channel_type" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Канал</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger><SelectValue placeholder="Выберите канал"/></SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>{channelTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                    </div>
-                </>
-            )
-        case 'gateway':
-             return (
-                <>
-                    <FormField control={form.control} name="external_id" render={({ field }) => ( <FormItem> <FormLabel>Идентификатор</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="serial_number" render={({ field }) => ( <FormItem> <FormLabel>Серийный номер</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="model" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Модель</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Выберите модель"/></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>{gatewayModels.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="object_name" render={({ field }) => ( <FormItem> <FormLabel>Объект</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="address" render={({ field }) => ( <FormItem> <FormLabel>Адрес</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="channel_type" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Канал</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Выберите канал"/></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>{channelTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                </>
-            )
-        default:
-            return null;
-    }
-  }
-
+  
+  const gateways = React.useMemo(() => allDevices.filter(d => d.is_gateway), []);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Редактировать</DialogTitle>
+          <DialogTitle>Редактировать привязки</DialogTitle>
           <DialogDescription>
-            Измените информацию ниже и нажмите "Сохранить".
+            Измените объект или шлюз для устройства.
           </DialogDescription>
         </DialogHeader>
+        <div className="grid gap-4 py-4 text-sm">
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Идентификатор</Label>
+                <Input value={device.external_id} readOnly className="col-span-3 font-mono" />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Серийный номер</Label>
+                <Input value={device.serial_number} readOnly className="col-span-3 font-mono" />
+            </div>
+        </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            {renderFormFields()}
-            <DialogFooter>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="objectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Объект</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите объект" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {allObjects.map((obj) => (
+                          <SelectItem key={obj.id} value={String(obj.id)}>
+                            {obj.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="gatewayId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Шлюз (необязательно)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите шлюз" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {gateways.map((gw) => (
+                          <SelectItem key={gw.id} value={String(gw.id)}>
+                            {gw.serial_number} ({gw.object_name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Отмена</Button>
               <Button type="submit">Сохранить</Button>
             </DialogFooter>
@@ -276,5 +185,3 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
     </Dialog>
   );
 }
-
-    
