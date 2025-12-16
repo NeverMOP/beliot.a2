@@ -40,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { objects } from '@/lib/data';
+import { allObjects } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
 const reportSchema = z.object({
@@ -104,7 +104,7 @@ export function ReportForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {objects.map((obj) => (
+                        {allObjects.map((obj) => (
                           <SelectItem key={obj.id} value={String(obj.id)}>
                             {obj.name}
                           </SelectItem>
