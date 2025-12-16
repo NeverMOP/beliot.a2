@@ -10,6 +10,7 @@ import Link from "next/link"
 import { getReadingsForDevice, getGatewayForDevice } from "@/lib/data"
 import { EditForm } from "../shared/edit-form"
 import React from "react"
+import { format } from "date-fns"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -74,7 +75,17 @@ const ActionsCell = ({ row }: { row: any }) => {
 export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: "id",
-    header: "ID",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
   },
   {
     accessorKey: "type",
@@ -176,10 +187,30 @@ export const columns: ColumnDef<Device>[] = [
     },
   },
   {
-    accessorKey: "created_at",
-    header: "Дата создания",
-    cell: ({row}) => {
-        return new Date(row.original.created_at).toLocaleDateString('ru-RU')
+    id: 'last_activity',
+    accessorFn: (row) => {
+        const readings = getReadingsForDevice(row.id);
+        const latestReading = readings[readings.length - 1];
+        return latestReading ? new Date(latestReading.time).getTime() : 0;
+    },
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Последняя активность
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+        const readings = getReadingsForDevice(row.original.id);
+        const latestReading = readings[readings.length - 1];
+        if (!latestReading) {
+            return <span className="text-muted-foreground">N/A</span>;
+        }
+        return format(new Date(latestReading.time), 'dd.MM.yyyy HH:mm');
     },
   },
   {
