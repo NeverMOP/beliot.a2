@@ -39,7 +39,7 @@ type Entity = BeliotObject | Device;
 type EntityName = "object" | "device" | "gateway";
 
 const deviceSchema = z.object({
-  objectId: z.string().min(1, "Необходимо выбрать объект"),
+  objectId: z.string().optional(),
   gatewayId: z.string().optional(),
 });
 
@@ -56,7 +56,7 @@ const getFormDefaultValues = (entityName: EntityName, entity: Entity) => {
             // This is a simplified logic, in real app we'd need a more robust way to find the gateway
             const gateway = allDevices.find(d => d.is_gateway && d.objectId === dev.objectId);
             return {
-                objectId: String(dev.objectId),
+                objectId: dev.objectId ? String(dev.objectId) : "",
                 gatewayId: gateway ? String(gateway.id) : undefined,
             };
         default:
@@ -134,13 +134,14 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Объект</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите объект" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="">Без привязки</SelectItem>
                         {allObjects.map((obj) => (
                           <SelectItem key={obj.id} value={String(obj.id)}>
                             {obj.name}

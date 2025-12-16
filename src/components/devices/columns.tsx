@@ -5,12 +5,13 @@ import { type Device } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown, Menu, Droplets, Thermometer } from "lucide-react"
+import { ArrowUpDown, Menu, Droplets, Thermometer, Settings } from "lucide-react"
 import Link from "next/link"
 import { getReadingsForDevice, getGatewayForDevice } from "@/lib/data"
 import { EditForm } from "../shared/edit-form"
 import React from "react"
 import { format } from "date-fns"
+import { DeviceParametersForm } from "./device-parameters-form"
 
 const getStatusClass = (status: 'online' | 'offline' | 'warning') => {
     switch (status) {
@@ -37,6 +38,7 @@ const typeRussian: Record<string, string> = {
 const ActionsCell = ({ row }: { row: any }) => {
     const device = row.original;
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+    const [isParametersDialogOpen, setIsParametersDialogOpen] = React.useState(false);
 
     return (
         <>
@@ -45,6 +47,11 @@ const ActionsCell = ({ row }: { row: any }) => {
                 entityName="device"
                 isOpen={isEditDialogOpen}
                 onOpenChange={setIsEditDialogOpen}
+            />
+            <DeviceParametersForm
+                device={device}
+                isOpen={isParametersDialogOpen}
+                onOpenChange={setIsParametersDialogOpen}
             />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -63,6 +70,10 @@ const ActionsCell = ({ row }: { row: any }) => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
                         Редактировать
+                    </DropdownMenuItem>
+                     <DropdownMenuItem onSelect={() => setIsParametersDialogOpen(true)}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Параметры
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive">Удалить</DropdownMenuItem>
@@ -123,6 +134,9 @@ export const columns: ColumnDef<Device>[] = [
     cell: ({ row }) => {
       const objectName = row.original.object_name;
       const objectId = row.original.objectId;
+      if (!objectId || !objectName) {
+        return <span className="text-muted-foreground">-</span>;
+      }
       return <Link href={`/objects?selected_object_id=${objectId}`} className="hover:underline text-primary">{objectName}</Link>
     }
   },
