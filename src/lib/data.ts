@@ -95,7 +95,7 @@ export let devices: Device[] = [
     channel_type: 'nbiot',
     address: 'ул. Парковая, д. 33',
     object_name: 'Детский сад "Солнышко"',
-    status: 'online',
+    status: 'warning',
     unit_volume: 'м³',
     unit_energy: 'ГДж',
     unit_temperature: '°C',
@@ -306,12 +306,24 @@ const generateReadings = (
     const time = new Date(now.getTime() - i * 60 * 60 * 1000).toISOString(); // one reading per hour
     const seed = deviceId + i;
 
+    let error_flags = 0;
+    // Simulate some errors based on device ID for determinism
+    if (deviceId % 10 === 4) { // Device 4 and other devices ending in 4
+        error_flags |= 1; // Low battery
+    }
+    if (deviceId % 10 === 5) { // Device 5
+        error_flags |= 2; // Tampering
+    }
+     if (deviceId % 10 === 7) { // Device 7
+        error_flags |= 2; // Tampering
+    }
+
     const reading: Reading = {
       time,
       device_id: deviceId,
-      battery_percent: 80 - i * 0.5,
+      battery_percent: (deviceId % 10 === 4) ? 9 - (i*0.5) : 80 - i * 0.5, // Simulate low battery for device 4
       rssi: -70 - Math.floor(pseudoRandom(seed + 1) * 10),
-      error_flags: 0,
+      error_flags,
     };
 
     if (deviceType === 'water') {
