@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -40,12 +40,14 @@ import {
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  data: TData[],
+  dateRangeComponent: React.ReactNode,
 }
 
 export function ReadingsTable<TData, TValue>({
   columns,
   data,
+  dateRangeComponent
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "time", desc: true },
@@ -70,39 +72,45 @@ export function ReadingsTable<TData, TValue>({
 
   return (
     <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>История показаний</CardTitle>
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Колонки
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-                {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                    const header = column.columnDef.header;
-                    const headerText = typeof header === 'string' ? header : column.id;
-                    return (
-                    <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                        }
-                    >
-                        {headerText}
-                    </DropdownMenuCheckboxItem>
-                    )
-                })}
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                 <CardTitle>История показаний</CardTitle>
+                 <CardDescription className="pt-1">Выберите период для просмотра данных в таблице.</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+                {dateRangeComponent}
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="ml-auto">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Колонки
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                    {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                        const header = column.columnDef.header;
+                        const headerText = typeof header === 'string' ? header : column.id;
+                        return (
+                        <DropdownMenuCheckboxItem
+                            key={column.id}
+                            className="capitalize"
+                            checked={column.getIsVisible()}
+                            onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                            }
+                        >
+                            {headerText}
+                        </DropdownMenuCheckboxItem>
+                        )
+                    })}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            </div>
         </CardHeader>
         <CardContent>
             <div className="relative">

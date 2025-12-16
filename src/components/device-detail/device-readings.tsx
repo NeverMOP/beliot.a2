@@ -58,20 +58,17 @@ export function DeviceReadings({
                 <ReadingsCharts device={device} readings={filteredReadings} />
             </div>
         </div>
-        <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border bg-card text-card-foreground shadow-sm p-4">
-                 <div className="pb-4 sm:pb-0">
-                     <h3 className="text-lg font-semibold leading-none tracking-tight">История показаний</h3>
-                     <p className="text-sm text-muted-foreground pt-1">Выберите период для просмотра данных в таблице.</p>
-                 </div>
-                 <DateRangePicker
+        <ReadingsTable 
+            columns={columns} 
+            data={filteredReadings} 
+            dateRangeComponent={
+                <DateRangePicker
                     dateRange={dateRange}
                     setDateRange={setDateRange}
                     className="w-full sm:w-auto"
-                 />
-            </div>
-            <ReadingsTable columns={columns} data={filteredReadings} />
-        </div>
+                />
+            }
+        />
     </>
   );
 }
