@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -6,28 +7,57 @@ import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Search } from 'lucide-react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 const LOGS_PER_PAGE = 10;
 const MAX_LOGS = 100;
 
 export default function DeviceLogsPage({ params }: { params: { id: string } }) {
   const deviceId = parseInt(params.id, 10);
-  // These are server-side calls initially, but will be re-used on client.
   const device = getDeviceById(deviceId);
-  const allReadings = getReadingsForDevice(deviceId).reverse().slice(0, MAX_LOGS);
+  const allReadings = React.useMemo(() => getReadingsForDevice(deviceId).reverse().slice(0, MAX_LOGS), [deviceId]);
 
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   if (!device) {
-    // `notFound()` can be called in client components.
-    // It will render the nearest not-found.js file.
     notFound();
   }
 
-  const totalPages = Math.ceil(allReadings.length / LOGS_PER_PAGE);
+  const filteredReadings = React.useMemo(() => {
+    if (!searchQuery) {
+      return allReadings;
+    }
+    return allReadings.filter(reading => 
+      JSON.stringify(reading).toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [allReadings, searchQuery]);
+
+  const totalPages = Math.ceil(filteredReadings.length / LOGS_PER_PAGE);
   const startIndex = (currentPage - 1) * LOGS_PER_PAGE;
   const endIndex = startIndex + LOGS_PER_PAGE;
-  const currentLogs = allReadings.slice(startIndex, endIndex);
+  const currentLogs = filteredReadings.slice(startIndex, endIndex);
+
+  const getSummary = (reading: any) => {
+    const time = format(new Date(reading.time), 'dd.MM.yyyy HH:mm:ss', { locale: ru });
+    let value = '';
+    if (device?.type === 'water' && reading.in1 !== undefined) {
+      value = `Объем: ${reading.in1.toFixed(3)} ${device.unit_volume}`;
+    } else if (device?.type === 'heat' && reading.energy !== undefined) {
+      value = `Энергия: ${reading.energy.toFixed(3)} ${device.unit_energy}`;
+    }
+    return `${time} - ${value}`;
+  }
+  
+  // Reset page to 1 when search query changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
 
   return (
     <div className="space-y-6">
@@ -35,21 +65,41 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
         <CardHeader>
           <CardTitle>Сырые данные (логи) устройства</CardTitle>
           <CardDescription>
-            Отображены последние {MAX_LOGS} записей для устройства <strong>{device.serial_number}</strong>.
+            Отображены последние {Math.min(MAX_LOGS, allReadings.length)} записей для устройства <strong>{device.serial_number}</strong>.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[60svh] w-full rounded-md border bg-muted/20 p-4">
-            <div className="space-y-2">
-              {currentLogs.map((reading, index) => (
-                <pre key={startIndex + index} className="text-xs">
-                  {JSON.stringify(reading, null, 2)}
-                </pre>
-              ))}
-              {allReadings.length === 0 && (
-                <p className="text-sm text-muted-foreground">Нет данных для отображения.</p>
-              )}
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по логам..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
+          </div>
+          <ScrollArea className="h-[55svh] w-full">
+             <Accordion type="multiple" className="pr-4">
+                {currentLogs.map((reading, index) => (
+                    <AccordionItem value={`item-${startIndex + index}`} key={startIndex + index}>
+                        <AccordionTrigger className="text-sm font-mono hover:no-underline">
+                           {getSummary(reading)}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                             <pre className="text-xs bg-muted/50 p-4 rounded-md overflow-x-auto">
+                                {JSON.stringify(reading, null, 2)}
+                            </pre>
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+             </Accordion>
+             {filteredReadings.length === 0 && (
+                <div className="flex h-48 items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Нет данных для отображения.</p>
+                </div>
+              )}
           </ScrollArea>
         </CardContent>
         {totalPages > 1 && (
@@ -79,3 +129,4 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
