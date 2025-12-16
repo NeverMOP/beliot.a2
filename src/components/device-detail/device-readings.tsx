@@ -20,14 +20,16 @@ export function DeviceReadings({
   device: Device;
   readings: Reading[];
 }) {
-  // State for the date picker itself
-  const [date, setDate] = React.useState<DateRange | undefined>({
+  const initialDateRange = {
     from: subDays(new Date(), 7),
     to: new Date(),
-  });
+  };
+
+  // State for the date picker component itself
+  const [date, setDate] = React.useState<DateRange | undefined>(initialDateRange);
   
-  // State for the applied filter
-  const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(date);
+  // State for the applied filter, which controls the charts and table
+  const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(initialDateRange);
 
   const handleApplyFilter = () => {
     setAppliedDateRange(date);
@@ -35,8 +37,9 @@ export function DeviceReadings({
 
   const filteredReadings = React.useMemo(() => {
     if (!appliedDateRange?.from) {
-        return readings;
+        return []; // Return empty if no range is applied
     }
+    // Ensure 'to' date includes the entire day
     const fromDate = appliedDateRange.from;
     const toDate = new Date(appliedDateRange.to || appliedDateRange.from);
     toDate.setHours(23, 59, 59, 999); 
