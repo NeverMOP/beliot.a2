@@ -9,11 +9,12 @@ import { Label } from '@/components/ui/label';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '../ui/scroll-area';
+import { type CatalogItem } from '@/lib/catalogs';
 
 interface CatalogCardProps {
   title: string;
   description: string;
-  items: string[];
+  items: CatalogItem[];
   itemName: string;
   dialogTitle: string;
   dialogDescription: string;
@@ -31,11 +32,11 @@ export function CatalogCard({
 }: CatalogCardProps) {
   const [items, setItems] = React.useState(initialItems);
   const [open, setOpen] = React.useState(false);
-  const [newItem, setNewItem] = React.useState('');
+  const [newItemLabel, setNewItemLabel] = React.useState('');
   const { toast } = useToast();
 
   const handleAddItem = () => {
-    if (newItem.trim() === '') {
+    if (newItemLabel.trim() === '') {
       toast({
         variant: 'destructive',
         title: 'Ошибка',
@@ -44,21 +45,27 @@ export function CatalogCard({
       return;
     }
     // In a real app, you'd call an API here.
+    // For now, we simulate adding a new item.
+    const newItem: CatalogItem = {
+      id: newItemLabel.toLowerCase().replace(/\s+/g, '-'),
+      value: newItemLabel,
+      label: newItemLabel,
+    }
     setItems([...items, newItem]);
     toast({
-      title: `Новая ${itemName} добавлена`,
-      description: `"${newItem}" было добавлено в список.`,
+      title: `Новый элемент '${itemName}' добавлен`,
+      description: `"${newItem.label}" был добавлен в справочник.`,
     });
-    setNewItem('');
+    setNewItemLabel('');
     setOpen(false);
   };
   
-  const handleDeleteItem = (itemToDelete: string) => {
+  const handleDeleteItem = (itemToDelete: CatalogItem) => {
     // In a real app, you'd call an API here.
-    setItems(items.filter(item => item !== itemToDelete));
+    setItems(items.filter(item => item.id !== itemToDelete.id));
     toast({
-      title: `${itemName} удалена`,
-      description: `"${itemToDelete}" было удалено из списка.`,
+      title: `'${itemName}' удален`,
+      description: `"${itemToDelete.label}" был удален из справочника.`,
     });
   }
 
@@ -72,8 +79,8 @@ export function CatalogCard({
         <ScrollArea className="h-48 pr-4">
             <div className="space-y-2">
             {items.map((item) => (
-                <div key={item} className="flex items-center justify-between rounded-md border p-3">
-                    <span className="text-sm font-medium">{item}</span>
+                <div key={item.id} className="flex items-center justify-between rounded-md border p-3">
+                    <span className="text-sm font-medium">{item.label}</span>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="icon" className="h-7 w-7" disabled>
                             <Pencil className="h-4 w-4" />
@@ -94,7 +101,7 @@ export function CatalogCard({
           <DialogTrigger asChild>
             <Button variant="outline">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Добавить {itemName}
+              Добавить
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
@@ -109,8 +116,8 @@ export function CatalogCard({
                 </Label>
                 <Input
                   id="name"
-                  value={newItem}
-                  onChange={(e) => setNewItem(e.target.value)}
+                  value={newItemLabel}
+                  onChange={(e) => setNewItemLabel(e.target.value)}
                   placeholder={dialogInputPlaceholder}
                   className="col-span-3"
                 />

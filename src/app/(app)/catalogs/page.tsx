@@ -1,5 +1,5 @@
 import { CatalogCard } from '@/components/catalogs/catalog-card';
-import { deviceModels, channelTypes, gatewayModels } from '@/lib/catalogs';
+import { deviceModels, channelTypes, gatewayModels, objectTypes } from '@/lib/catalogs';
 
 export default function CatalogsPage() {
   return (
@@ -8,10 +8,10 @@ export default function CatalogsPage() {
         Здесь вы сможете управлять списками моделей, типов каналов и другими параметрами системы.
       </p>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <CatalogCard
           title="Модели устройств"
-          description="Управление списком доступных моделей устройств."
+          description="Управление списком доступных моделей приборов учета."
           items={deviceModels}
           itemName="модель"
           dialogTitle="Добавить новую модель"
@@ -35,6 +35,15 @@ export default function CatalogsPage() {
           dialogTitle="Добавить новый тип канала"
           dialogDescription="Введите название нового типа канала связи."
           dialogInputPlaceholder="например, gsm"
+        />
+        <CatalogCard
+          title="Типы объектов"
+          description="Управление типами объектов (жилой дом, склад и т.д.)."
+          items={objectTypes}
+          itemName="тип объекта"
+          dialogTitle="Добавить новый тип объекта"
+          dialogDescription="Введите название нового типа объекта."
+          dialogInputPlaceholder="например, Промышленное здание"
         />
       </div>
     </div>

@@ -33,6 +33,7 @@ import {
   } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
+import { objectTypes } from "@/lib/catalogs";
 
 const objectSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
@@ -121,14 +122,9 @@ export function CreateObjectForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="residential">Жилой дом</SelectItem>
-                        <SelectItem value="business_center">Бизнес-центр</SelectItem>
-                        <SelectItem value="mall">Торговый центр</SelectItem>
-                        <SelectItem value="medical">Мед. учреждение</SelectItem>
-                        <SelectItem value="school">Школа</SelectItem>
-                        <SelectItem value="kindergarten">Детский сад</SelectItem>
-                        <SelectItem value="heating_point">Тепловой пункт</SelectItem>
-                        <SelectItem value="warehouse">Склад</SelectItem>
+                        {objectTypes.map((type) => (
+                           <SelectItem key={type.id} value={type.value}>{type.label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

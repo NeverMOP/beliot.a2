@@ -124,7 +124,7 @@ export function CreateGatewayForm() {
                       </FormControl>
                       <SelectContent>
                         {gatewayModels.map((model) => (
-                            <SelectItem key={model} value={model}>{model}</SelectItem>
+                            <SelectItem key={model.id} value={model.value}>{model.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -172,7 +172,7 @@ export function CreateGatewayForm() {
                     </FormControl>
                     <SelectContent>
                        {channelTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                          <SelectItem key={type.id} value={type.value}>{type.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
