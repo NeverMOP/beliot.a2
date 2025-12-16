@@ -6,7 +6,7 @@ import { type ColumnDef, type Row } from "@tanstack/react-table"
 import { type BeliotObject } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, ChevronsRight, Eye, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
+import { MoreHorizontal, ChevronsRight, Eye } from "lucide-react"
 import { EditForm } from "../shared/edit-form"
 
 const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
@@ -24,26 +24,22 @@ const DeviceStatusSummary = ({ row }: { row: Row<BeliotObject> }) => {
     const { deviceCount, onlineCount = 0, offlineCount = 0, warningCount = 0 } = row.original;
 
     if (deviceCount === 0) {
-        return <span>{deviceCount}</span>;
+        return <span className="text-muted-foreground">-</span>;
     }
     
-    // Always show status icons if there are devices
     return (
-        <div className="flex items-center gap-4">
-            <span className="font-bold">{deviceCount}</span>
-            <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-1 text-[hsl(var(--chart-1))]">
-                    <CheckCircle size={16} />
-                    <span>{onlineCount}</span>
-                </div>
-                 <div className="flex items-center gap-1 text-muted-foreground">
-                    <XCircle size={16} />
-                    <span>{offlineCount}</span>
-                </div>
-                <div className="flex items-center gap-1 text-destructive">
-                    <AlertTriangle size={16} />
-                    <span>{warningCount}</span>
-                </div>
+        <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-1.5" title="Онлайн">
+                 <span className="h-2 w-2 rounded-full bg-[hsl(var(--chart-1))]"></span>
+                <span className="font-medium">{onlineCount}</span>
+            </div>
+             <div className="flex items-center gap-1.5" title="Офлайн">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground"></span>
+                <span className="font-medium">{offlineCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5" title="Предупреждения">
+                 <span className="h-2 w-2 rounded-full bg-destructive"></span>
+                <span className="font-medium">{warningCount}</span>
             </div>
         </div>
     )
@@ -128,7 +124,7 @@ export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>
   },
   {
     accessorKey: "deviceCount",
-    header: "Устройства",
+    header: "Статус",
     cell: ({ row }) => <div>
         <DeviceStatusSummary row={row} />
     </div>
