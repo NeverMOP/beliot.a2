@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -68,27 +69,27 @@ function DesktopControls({
     return (
         <>
             <div className='flex gap-2 border-r pr-4'>
-                <Button variant={typeFilter === 'all' ? 'default' : 'outline'} onClick={() => setTypeFilter('all')} size="sm" className="bg-background/80" >
+                <Button variant={typeFilter === 'all' ? 'default' : 'outline'} onClick={() => setTypeFilter('all')} size="sm" >
                     <List className="mr-2 h-4 w-4" /> Все типы
                 </Button>
-                <Button variant={typeFilter === 'water' ? 'default' : 'outline'} onClick={() => setTypeFilter('water')} size="sm" className="bg-background/80" >
+                <Button variant={typeFilter === 'water' ? 'default' : 'outline'} onClick={() => setTypeFilter('water')} size="sm" >
                     <Droplets className="mr-2 h-4 w-4" /> Вода
                 </Button>
-                <Button variant={typeFilter === 'heat' ? 'default' : 'outline'} onClick={() => setTypeFilter('heat')} size="sm" className="bg-background/80" >
+                <Button variant={typeFilter === 'heat' ? 'default' : 'outline'} onClick={() => setTypeFilter('heat')} size="sm" >
                     <Thermometer className="mr-2 h-4 w-4" /> Тепло
                 </Button>
             </div>
              <div className='flex gap-2 border-r pr-4'>
-                <Button variant={statusFilter === 'all' ? 'default' : 'outline'} onClick={() => setStatusFilter('all')} size="sm" className="bg-background/80" >
+                <Button variant={statusFilter === 'all' ? 'default' : 'outline'} onClick={() => setStatusFilter('all')} size="sm" >
                     <List className="mr-2 h-4 w-4" /> Все статусы
                 </Button>
-                <Button variant={statusFilter === 'online' ? 'default' : 'outline'} onClick={() => setStatusFilter('online')} size="sm" className="bg-background/80" >
+                <Button variant={statusFilter === 'online' ? 'default' : 'outline'} onClick={() => setStatusFilter('online')} size="sm" >
                     <CheckCircle className="mr-2 h-4 w-4" /> Онлайн
                 </Button>
-                <Button variant={statusFilter === 'offline' ? 'default' : 'outline'} onClick={() => setStatusFilter('offline')} size="sm" className="bg-background/80" >
+                <Button variant={statusFilter === 'offline' ? 'default' : 'outline'} onClick={() => setStatusFilter('offline')} size="sm" >
                     <XCircle className="mr-2 h-4 w-4" /> Офлайн
                 </Button>
-                 <Button variant={statusFilter === 'warning' ? 'default' : 'outline'} onClick={() => setStatusFilter('warning')} size="sm" className="bg-background/80" >
+                 <Button variant={statusFilter === 'warning' ? 'default' : 'outline'} onClick={() => setStatusFilter('warning')} size="sm" >
                     <AlertTriangle className="mr-2 h-4 w-4" /> Предупреждения
                 </Button>
             </div>
