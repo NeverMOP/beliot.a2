@@ -1,6 +1,6 @@
 'use client'
 
-import { users } from "@/lib/data";
+import { getUsers } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns } from "@/components/users/columns";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,22 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { type User } from "@/lib/types";
 
-export default function UsersPage() {
+function UsersPageContent() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [currentUsers, setCurrentUsers] = React.useState<User[]>([]);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setCurrentUsers(getUsers(companyIdNum));
+    }, [companyId]);
+
    const table = useReactTable({
-    data: users,
+    data: currentUsers,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -32,7 +44,15 @@ export default function UsersPage() {
             </Button>
         </div>
       </div>
-       <DataTable columns={columns} data={users} table={table} />
+       <DataTable columns={columns} data={currentUsers} table={table} />
     </div>
   );
+}
+
+export default function UsersPage() {
+    return (
+        <Suspense fallback={<div>Загрузка...</div>}>
+            <UsersPageContent />
+        </Suspense>
+    )
 }

@@ -2,21 +2,20 @@
 
 import React from "react";
 import { type ColumnDef, type Row } from "@tanstack/react-table"
+import { useRouter } from "next/navigation";
 import { type Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Menu, ChevronsRight, LogIn } from "lucide-react"
-import { useToast } from "@/hooks/use-toast";
 
 const ActionsCell = ({ row }: { row: Row<Company> }) => {
     const company = row.original;
-    const { toast } = useToast();
+    const router = useRouter();
 
     const handleLogin = () => {
-        toast({
-            title: `Вход в компанию...`,
-            description: `Переключение на контекст компании "${company.name}".`,
-        });
+        const params = new URLSearchParams(window.location.search);
+        params.set("companyId", String(company.id));
+        router.push(`/dashboard?${params.toString()}`);
     };
 
     return (

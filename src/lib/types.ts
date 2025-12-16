@@ -9,6 +9,7 @@ export type BeliotObject = {
     warningCount?: number;
     parentId?: number | null;
     children?: BeliotObject[];
+    companyId?: number;
 }
 
 export type DeviceAttribute = {
@@ -21,6 +22,7 @@ export type User = {
     email: string;
     full_name: string;
     role: 'admin' | 'user' | 'viewer';
+    companyId?: number;
 }
 
 export type Company = {

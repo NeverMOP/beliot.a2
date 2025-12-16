@@ -1,13 +1,13 @@
 import { type Device, type Reading, type BeliotObject, type User, type Company } from './types';
 
 export let initialObjects: BeliotObject[] = [
-  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 0, objectType: 'residential' },
-  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 0, objectType: 'heating_point', parentId: 1 },
-  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 0, objectType: 'business_center' },
+  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 0, objectType: 'residential', companyId: 2 },
+  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 0, objectType: 'heating_point', parentId: 1, companyId: 2 },
+  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 0, objectType: 'business_center', companyId: 4 },
   { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 0, objectType: 'school' },
   { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 0, objectType: 'kindergarten', parentId: 4 },
-  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 0, objectType: 'warehouse' },
-  { id: 8, name: 'Большой дом', address: 'ул. Строителей, д. 100', deviceCount: 0, objectType: 'residential' },
+  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 0, objectType: 'warehouse', companyId: 4 },
+  { id: 8, name: 'Большой дом', address: 'ул. Строителей, д. 100', deviceCount: 0, objectType: 'residential', companyId: 5 },
 ];
 
 export let devices: Device[] = [
@@ -139,10 +139,10 @@ export let devices: Device[] = [
   },
 ];
 
-export const users: User[] = [
+export let users: User[] = [
     { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
-    { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user' },
-    { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer' },
+    { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user', companyId: 2 },
+    { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer', companyId: 4 },
 ];
 
 export const companies: Company[] = [
@@ -167,7 +167,8 @@ for (let i = 1; i <= 80; i++) {
         address: `${bigHouse.address}, кв. ${i}`,
         deviceCount: 3,
         objectType: 'residential',
-        parentId: bigHouseId
+        parentId: bigHouseId,
+        companyId: bigHouse.companyId
     };
     initialObjects.push(apartmentObject);
 
@@ -234,6 +235,22 @@ for (let i = 1; i <= 80; i++) {
     });
 }
 
+// Function to get a list of all descendant object IDs for a given company
+const getObjectIdsForCompany = (companyId: number): number[] => {
+    const allCompanyIds: number[] = [companyId];
+    const queue = [companyId];
+    while(queue.length > 0) {
+        const currentId = queue.shift()!;
+        const children = companies.filter(c => c.parentId === currentId);
+        children.forEach(c => {
+            allCompanyIds.push(c.id);
+            queue.push(c.id);
+        });
+    }
+
+    return initialObjects.filter(o => o.companyId && allCompanyIds.includes(o.companyId)).map(o => o.id);
+}
+
 
 // Function to calculate device counts for each object
 const calculateObjectDeviceCounts = (): BeliotObject[] => {
@@ -280,14 +297,47 @@ const calculateObjectDeviceCounts = (): BeliotObject[] => {
     return Array.from(objectsWithCounts.values());
 };
 
-export const objects = calculateObjectDeviceCounts();
+export const allObjects = calculateObjectDeviceCounts();
+
+const getDeviceCompanyId = (device: Device): number | undefined => {
+    const deviceObject = allObjects.find(o => o.id === device.objectId);
+    if (!deviceObject) return undefined;
+
+    let currentObject = deviceObject;
+    while(currentObject.parentId) {
+        const parent = allObjects.find(o => o.id === currentObject.parentId);
+        if (!parent) break;
+        currentObject = parent;
+    }
+    return currentObject.companyId;
+}
+
+export const getDevices = (companyId?: number): Device[] => {
+    if (!companyId) return devices;
+    return devices.filter(d => getDeviceCompanyId(d) === companyId);
+}
+
+export const getObjects = (companyId?: number): BeliotObject[] => {
+    if (!companyId) return allObjects;
+    const objectIdsOfCompany = getObjectIdsForCompany(companyId);
+    return allObjects.filter(o => o.companyId && objectIdsOfCompany.includes(o.id));
+}
+
+export const getUsers = (companyId?: number): User[] => {
+    if (!companyId) return users;
+    // In a real app, you might want to fetch users related to a company and its sub-companies.
+    return users.filter(u => u.companyId === companyId);
+}
+
+export const getCompanies = (): Company[] => companies;
 
 
-export function getObjectsTree(): BeliotObject[] {
-  const objectsById = new Map(objects.map(obj => [obj.id, { ...obj, children: [] as BeliotObject[] }]));
+export function getObjectsTree(companyId?: number): BeliotObject[] {
+  const relevantObjects = getObjects(companyId);
+  const objectsById = new Map(relevantObjects.map(obj => [obj.id, { ...obj, children: [] as BeliotObject[] }]));
   const roots: BeliotObject[] = [];
 
-  objects.forEach(obj => {
+  relevantObjects.forEach(obj => {
     const current = objectsById.get(obj.id)!;
     if (obj.parentId && objectsById.has(obj.parentId)) {
       const parent = objectsById.get(obj.parentId)!;

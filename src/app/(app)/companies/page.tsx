@@ -15,8 +15,9 @@ import {
     type ExpandedState,
     useReactTable,
 } from '@tanstack/react-table';
+import { Suspense } from "react";
 
-export default function CompaniesPage() {
+function CompaniesPageContent() {
     const [data, setData] = React.useState<Company[]>([]);
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
@@ -54,4 +55,13 @@ export default function CompaniesPage() {
       <DataTable columns={columns} data={data} table={table} />
     </div>
   );
+}
+
+
+export default function CompaniesPage() {
+    return (
+        <Suspense fallback={<div>Загрузка...</div>}>
+            <CompaniesPageContent />
+        </Suspense>
+    )
 }

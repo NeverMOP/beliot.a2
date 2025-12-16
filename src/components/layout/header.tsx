@@ -1,5 +1,7 @@
 import { UserNav } from './user-nav';
 import { MainNav } from './main-nav';
+import { CompanyContextSwitcher } from './company-context-switcher';
+import { Suspense } from 'react';
 
 export function AppHeader() {
   return (
@@ -7,6 +9,9 @@ export function AppHeader() {
        <div className="flex h-16 w-full items-center gap-4">
             <MainNav />
             <div className="ml-auto flex items-center gap-4">
+                <Suspense fallback={null}>
+                  <CompanyContextSwitcher />
+                </Suspense>
                 <UserNav />
             </div>
       </div>

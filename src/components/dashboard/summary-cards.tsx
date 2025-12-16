@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { devices } from '@/lib/data';
 import { CircuitBoard, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { type Device } from '@/lib/types';
+import React from 'react';
 
-export function SummaryCards() {
+export function SummaryCards({ devices }: { devices: Device[] }) {
   const totalDevices = devices.length;
   const onlineDevices = devices.filter((d) => d.status === 'online').length;
   const offlineDevices = devices.filter((d) => d.status === 'offline').length;

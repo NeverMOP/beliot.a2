@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Suspense } from 'react';
-import { devices } from '@/lib/data';
+import { getDevices } from '@/lib/data';
 import { DataTable } from '@/components/devices/data-table';
 import { columns as allColumns } from '@/components/devices/columns';
 import { CreateDeviceForm } from '@/components/devices/create-device-form';
@@ -283,9 +283,11 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
 
 function DevicesPageContent() {
   const searchParams = useSearchParams();
+  const companyId = searchParams.get('companyId');
   const objectNameFromUrl = searchParams.get('object_name');
   const statusFromUrl = searchParams.get('status') as StatusFilter | null;
   
+  const [currentDevices, setCurrentDevices] = React.useState<Device[]>([]);
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>('all');
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>(statusFromUrl || 'all');
   const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
@@ -296,6 +298,11 @@ function DevicesPageContent() {
    
   const columns = React.useMemo<ColumnDef<Device>[]>(() => allColumns, []);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+
+  React.useEffect(() => {
+    const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+    setCurrentDevices(getDevices(companyIdNum));
+  }, [companyId]);
 
   React.useEffect(() => {
     setColumnVisibility(isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY);
@@ -332,7 +339,7 @@ function DevicesPageContent() {
 
 
   const table = useReactTable({
-    data: devices,
+    data: currentDevices,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -385,7 +392,7 @@ function DevicesPageContent() {
             }
         </div>
       </div>
-      <DataTable columns={columns} data={devices} table={table} />
+      <DataTable columns={columns} data={currentDevices} table={table} />
     </div>
   );
 }
@@ -397,5 +404,3 @@ export default function DevicesPage() {
         </Suspense>
     )
 }
-
-    

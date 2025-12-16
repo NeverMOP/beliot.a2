@@ -8,18 +8,9 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart';
 import { PieChart, Pie, Cell } from 'recharts';
-import { devices } from '@/lib/data';
+import { type Device } from '@/lib/types';
 import { type ChartConfig } from '@/components/ui/chart';
-
-const statusData = devices.reduce((acc, device) => {
-  acc[device.status] = (acc[device.status] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-
-const chartData = Object.entries(statusData).map(([status, count]) => ({
-  status,
-  count,
-}));
+import React from 'react';
 
 const chartConfig = {
   count: {
@@ -39,7 +30,19 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function DeviceStatusChart() {
+export function DeviceStatusChart({ devices }: { devices: Device[] }) {
+  const chartData = React.useMemo(() => {
+    const statusData = devices.reduce((acc, device) => {
+      acc[device.status] = (acc[device.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(statusData).map(([status, count]) => ({
+      status,
+      count,
+    }));
+  }, [devices]);
+
   return (
     <Card>
       <CardHeader>

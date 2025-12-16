@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { devices, getReadingsForDevice } from '@/lib/data';
+import { getReadingsForDevice } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +51,7 @@ const getWarningDetails = (device: Device): { text: string; icon: React.ReactNod
 };
 
 
-export function RecentActivity() {
+export function RecentActivity({ devices }: { devices: Device[] }) {
   const recentAlerts = devices
     .filter((d) => d.status === 'offline' || d.status === 'warning')
     .slice(0, 5);
