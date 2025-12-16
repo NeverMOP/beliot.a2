@@ -20,19 +20,26 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function ObjectsPageContent() {
+function ObjectsPageContent({ 
+    initialTree, 
+    initialAllObjects, 
+    initialAllDevices 
+}: { 
+    initialTree: BeliotObject[], 
+    initialAllObjects: BeliotObject[],
+    initialAllDevices: Device[]
+}) {
     const searchParams = useSearchParams();
-    const companyId = searchParams.get('companyId');
     const selectedObjectIdFromUrl = searchParams.get('selected_object_id');
 
-    const [data, setData] = React.useState<BeliotObject[]>([]);
-    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
-    const [allDevices, setAllDevices] = React.useState<Device[]>([]);
+    const [data, setData] = React.useState<BeliotObject[]>(initialTree);
+    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>(initialAllObjects);
+    const [allDevices, setAllDevices] = React.useState<Device[]>(initialAllDevices);
+
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
     const [selectedObject, setSelectedObject] = React.useState<BeliotObject | null>(null);
     const [devicesInSelectedObject, setDevicesInSelectedObject] = React.useState<Device[]>([]);
 
-    const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
     
     // Helper function to recursively get all devices from an object and its children
     const getAllDevicesForObject = React.useCallback((object: BeliotObject, allDevs: Device[]): Device[] => {
@@ -67,18 +74,10 @@ function ObjectsPageContent() {
     };
     
     React.useEffect(() => {
-        const fetchData = async () => {
-            const [tree, objects, devices] = await Promise.all([
-                getObjectsTree(companyIdNum),
-                getAllObjects(),
-                getDevices(companyIdNum),
-            ]);
-            setData(tree);
-            setAllObjects(objects);
-            setAllDevices(devices);
-        }
-        fetchData();
-    }, [companyIdNum]);
+        setData(initialTree);
+        setAllObjects(initialAllObjects);
+        setAllDevices(initialAllDevices);
+    }, [initialTree, initialAllObjects, initialAllDevices]);
     
      React.useEffect(() => {
         if (selectedObjectIdFromUrl && data.length > 0 && allObjects.length > 0) {
@@ -167,10 +166,45 @@ function ObjectsPageSkeleton() {
     )
 }
 
+function ObjectsPageContainer() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [loading, setLoading] = React.useState(true);
+    const [tree, setTree] = React.useState<BeliotObject[]>([]);
+    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
+    const [allDevices, setAllDevices] = React.useState<Device[]>([]);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setLoading(true);
+        Promise.all([
+            getObjectsTree(companyIdNum),
+            getAllObjects(),
+            getDevices(companyIdNum),
+        ]).then(([fetchedTree, fetchedObjects, fetchedDevices]) => {
+            setTree(fetchedTree);
+            setAllObjects(fetchedObjects);
+            setAllDevices(fetchedDevices);
+            setLoading(false);
+        });
+    }, [companyId]);
+
+    if (loading) {
+        return <ObjectsPageSkeleton />;
+    }
+
+    return <ObjectsPageContent 
+        initialTree={tree}
+        initialAllObjects={allObjects}
+        initialAllDevices={allDevices}
+    />;
+}
+
+
 export default function ObjectsPage() {
     return (
         <Suspense fallback={<ObjectsPageSkeleton />}>
-            <ObjectsPageContent />
+            <ObjectsPageContainer />
         </Suspense>
     )
 }

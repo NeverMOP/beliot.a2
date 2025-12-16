@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
 import React from "react"
 import { type ColumnDef } from "@tanstack/react-table"
-import { type Device } from "@/lib/types"
+import { type Device, type Reading } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -66,6 +66,35 @@ const ActionsCell = ({ row }: { row: any }) => {
     );
 };
 
+const LatestDataCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [latestReading, setLatestReading] = React.useState<Reading | undefined>(undefined);
+
+    React.useEffect(() => {
+        getReadingsForDevice(device.id).then(readings => {
+            setLatestReading(readings[readings.length - 1]);
+        });
+    }, [device.id]);
+
+    if (!latestReading) {
+        return <span className="text-muted-foreground">N/A</span>;
+    }
+
+    let value, unit;
+    if (device.type === 'water' && latestReading.in1) {
+        value = latestReading.in1.toFixed(2);
+        unit = device.unit_volume;
+    } else if (device.type === 'heat' && latestReading.energy) {
+        value = latestReading.energy.toFixed(2);
+        unit = device.unit_energy;
+    } else {
+         return <span className="text-muted-foreground">N/A</span>;
+    }
+
+    return <span>{value} {unit}</span>;
+};
+
+
 export const objectDeviceListColumns: ColumnDef<Device>[] = [
   {
     accessorKey: "object_name",
@@ -89,28 +118,7 @@ export const objectDeviceListColumns: ColumnDef<Device>[] = [
   {
     id: "latest_data",
     header: "Показания",
-    cell: ({ row }) => {
-      const device = row.original;
-      const readings = getReadingsForDevice(device.id);
-      const latestReading = readings[readings.length - 1];
-
-      if (!latestReading) {
-        return <span className="text-muted-foreground">N/A</span>;
-      }
-
-      let value, unit;
-      if (device.type === 'water' && latestReading.in1) {
-        value = latestReading.in1.toFixed(2);
-        unit = device.unit_volume;
-      } else if (device.type === 'heat' && latestReading.energy) {
-        value = latestReading.energy.toFixed(2);
-        unit = device.unit_energy;
-      } else {
-         return <span className="text-muted-foreground">N/A</span>;
-      }
-
-      return <span>{value} {unit}</span>;
-    },
+    cell: LatestDataCell
   },
   {
     accessorKey: "status",

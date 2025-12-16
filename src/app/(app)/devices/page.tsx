@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -283,13 +282,13 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
     actions: true,
 }
 
-function DevicesPageContent() {
+function DevicesPageContent({ initialDevices }: { initialDevices: Device[] }) {
   const searchParams = useSearchParams();
   const companyId = searchParams.get('companyId');
   const objectNameFromUrl = searchParams.get('object_name');
   const statusFromUrl = searchParams.get('status') as StatusFilter | null;
   
-  const [currentDevices, setCurrentDevices] = React.useState<Device[]>([]);
+  const [currentDevices, setCurrentDevices] = React.useState<Device[]>(initialDevices);
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>('all');
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>(statusFromUrl || 'all');
   const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
@@ -302,9 +301,8 @@ function DevicesPageContent() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
   React.useEffect(() => {
-    const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-    getDevices(companyIdNum).then(setCurrentDevices);
-  }, [companyId]);
+    setCurrentDevices(initialDevices);
+  }, [initialDevices]);
 
   React.useEffect(() => {
     setColumnVisibility(isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY);
@@ -408,10 +406,32 @@ function DevicesPageSkeleton() {
     )
 }
 
+function DevicesPageContainer() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [devices, setDevices] = React.useState<Device[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setLoading(true);
+        getDevices(companyIdNum).then(fetchedDevices => {
+            setDevices(fetchedDevices);
+            setLoading(false);
+        });
+    }, [companyId]);
+
+    if (loading) {
+        return <DevicesPageSkeleton />;
+    }
+
+    return <DevicesPageContent initialDevices={devices} />;
+}
+
 export default function DevicesPage() {
     return (
         <Suspense fallback={<DevicesPageSkeleton />}>
-            <DevicesPageContent />
+            <DevicesPageContainer />
         </Suspense>
     )
 }

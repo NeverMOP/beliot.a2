@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -12,20 +11,37 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { type Device, type Reading } from '@/lib/types';
 
 const LOGS_PER_PAGE = 10;
 const MAX_LOGS = 100;
 
 export default function DeviceLogsPage({ params }: { params: { id: string } }) {
   const deviceId = parseInt(params.id, 10);
-  const device = getDeviceById(deviceId);
-  const allReadings = React.useMemo(() => getReadingsForDevice(deviceId).reverse().slice(0, MAX_LOGS), [deviceId]);
+  const [device, setDevice] = React.useState<Device | null | undefined>(null);
+  const [allReadings, setAllReadings] = React.useState<Reading[]>([]);
+
+  React.useEffect(() => {
+    async function fetchData() {
+        const dev = await getDeviceById(deviceId);
+        if (!dev) notFound();
+        setDevice(dev);
+        const readings = await getReadingsForDevice(deviceId);
+        setAllReadings(readings.reverse().slice(0, MAX_LOGS));
+    }
+    fetchData();
+  }, [deviceId])
+
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const [searchQuery, setSearchQuery] = React.useState('');
 
-  if (!device) {
-    notFound();
+  if (device === null) {
+    return <div>Загрузка...</div>;
+  }
+  
+  if (device === undefined) {
+      notFound();
   }
 
   const filteredReadings = React.useMemo(() => {
@@ -129,4 +145,3 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
-

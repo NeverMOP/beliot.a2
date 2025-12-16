@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { type BeliotObject, type Device } from "@/lib/types";
-import { getAllObjects, getDevices as getAllDevices } from "@/lib/data";
+import { getAllObjects, getDevices as getAllDevices, getGatewayForDevice } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 
 type Entity = BeliotObject | Device;
@@ -46,6 +46,7 @@ const deviceSchema = z.object({
 
 const schemas = {
   device: deviceSchema,
+  // Add other schemas if needed
 };
 
 const getFormDefaultValues = async (entityName: EntityName, entity: Entity) => {
@@ -62,25 +63,6 @@ const getFormDefaultValues = async (entityName: EntityName, entity: Entity) => {
     }
 }
 
-async function getGatewayForDevice(device: Device): Promise<Device | undefined> {
-    if (device.is_gateway || !device.objectId) {
-        return undefined;
-    }
-    const allDevices = await getAllDevices();
-    const allObjects = await getAllObjects();
-    // Find the gateway that is on the same object or a parent object.
-    let currentObjectId: number | undefined | null = device.objectId;
-    while (currentObjectId) {
-        const gateway = allDevices.find(d => d.is_gateway && d.objectId === currentObjectId);
-        if (gateway) {
-            return gateway;
-        }
-        const currentObject = allObjects.find(o => o.id === currentObjectId);
-        currentObjectId = currentObject?.parentId;
-    }
-    return undefined;
-};
-
 
 interface EditFormProps {
   entity: Entity;
@@ -94,26 +76,27 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
   const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
   const [gateways, setGateways] = React.useState<Device[]>([]);
   
+  // This form is only for devices for now, as per the user's request.
   if (entityName !== 'device') {
     return null;
   }
   
+  // @ts-ignore
   const schema = schemas[entityName];
   const device = entity as Device;
 
-  // @ts-ignore
-  const form = useForm<z.infer<typeof schema>>({
+  const form = useForm<z.infer<typeof deviceSchema>>({
     resolver: zodResolver(schema),
   });
   
   React.useEffect(() => {
       const fetchData = async () => {
-          const [objects, allDevices] = await Promise.all([
+          const [objects, allDevs] = await Promise.all([
               getAllObjects(),
               getAllDevices()
           ]);
           setAllObjects(objects);
-          setGateways(allDevices.filter(d => d.is_gateway));
+          setGateways(allDevs.filter(d => d.is_gateway));
       }
       fetchData();
   }, []);
@@ -126,7 +109,7 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
     }
   }, [entity, entityName, isOpen, form]);
 
-  function onSubmit(data: z.infer<typeof schema>) {
+  function onSubmit(data: z.infer<typeof deviceSchema>) {
     console.log("Updating entity:", data);
     toast({
       title: "Данные обновлены",
@@ -187,13 +170,14 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Шлюз (необязательно)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите шлюз" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="">Без привязки</SelectItem>
                         {gateways.map((gw) => (
                           <SelectItem key={gw.id} value={String(gw.id)}>
                             {gw.serial_number} ({gw.object_name})
