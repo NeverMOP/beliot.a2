@@ -281,23 +281,24 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-function CompaniesPageContent() {
-    const [data, setData] = React.useState<Company[]>([]);
+function CompaniesPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
+
+function CompaniesPageContent({ companies }: { companies: Company[] }) {
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
-
-    React.useEffect(() => {
-        const fetchData = async () => {
-            const tree = await getCompaniesTree();
-            setData(tree);
-        };
-        fetchData();
-    }, []);
 
     const columns = React.useMemo(() => companyColumns, []);
 
     const table = useReactTable({
-        data,
+        data: companies,
         columns,
         state: {
           expanded,
@@ -321,16 +322,21 @@ function CompaniesPageContent() {
             </Button>
         </div>
       </div>
-      <DataTable columns={columns} data={data} table={table} />
+      <DataTable columns={columns} data={companies} table={table} />
     </div>
   );
 }
 
 
+async function CompaniesPageContainer() {
+    const tree = await getCompaniesTree();
+    return <CompaniesPageContent companies={tree} />
+}
+
 export default function CompaniesPage() {
     return (
-        <Suspense fallback={<div>Загрузка...</div>}>
-            <CompaniesPageContent />
+        <Suspense fallback={<CompaniesPageSkeleton />}>
+            <CompaniesPageContainer />
         </Suspense>
     )
 }
@@ -373,33 +379,49 @@ function DashboardSkeleton() {
     )
 }
 
-
-async function DashboardPageContent() {
-  const searchParams = useSearchParams();
-  const companyId = searchParams.get('companyId');
-  const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-  const currentDevices = await getDevices(companyIdNum);
-
+function DashboardPageContent({ devices }: { devices: Device[] }) {
   return (
     <div className="space-y-6">
-      <SummaryCards devices={currentDevices} />
+      <SummaryCards devices={devices} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <DeviceStatusChart devices={currentDevices} />
+          <DeviceStatusChart devices={devices} />
         </div>
         <div className="lg:col-span-2">
-          <RecentActivity devices={currentDevices} />
+          <RecentActivity devices={devices} />
         </div>
       </div>
     </div>
   );
 }
 
+// This is the parent component that remains a client component to use `useSearchParams`
+function DashboardPageContainer() {
+  const searchParams = useSearchParams();
+  const companyId = searchParams.get('companyId');
+  const [devices, setDevices] = React.useState<Device[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+    setLoading(true);
+    getDevices(companyIdNum).then(fetchedDevices => {
+      setDevices(fetchedDevices);
+      setLoading(false);
+    });
+  }, [companyId]);
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
+  return <DashboardPageContent devices={devices} />;
+}
 
 export default function DashboardPage() {
   return (
     <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardPageContent />
+      <DashboardPageContainer />
     </Suspense>
   )
 }
@@ -423,23 +445,25 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { type Device, type Reading } from '@/lib/types';
 
 const LOGS_PER_PAGE = 10;
 const MAX_LOGS = 100;
 
 export default function DeviceLogsPage({ params }: { params: { id: string } }) {
   const deviceId = parseInt(params.id, 10);
-  const [device, setDevice] = React.useState(null);
-  const [allReadings, setAllReadings] = React.useState([]);
+  const [device, setDevice] = React.useState<Device | null | undefined>(null);
+  const [allReadings, setAllReadings] = React.useState<Reading[]>([]);
 
   React.useEffect(() => {
     async function fetchData() {
         const dev = await getDeviceById(deviceId);
-        if (!dev) notFound();
-        // @ts-ignore
+        if (!dev) {
+          setDevice(undefined);
+          return;
+        }
         setDevice(dev);
         const readings = await getReadingsForDevice(deviceId);
-        // @ts-ignore
         setAllReadings(readings.reverse().slice(0, MAX_LOGS));
     }
     fetchData();
@@ -449,8 +473,12 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [searchQuery, setSearchQuery] = React.useState('');
 
-  if (!device) {
+  if (device === null) {
     return <div>Загрузка...</div>;
+  }
+  
+  if (device === undefined) {
+      notFound();
   }
 
   const filteredReadings = React.useMemo(() => {
@@ -470,13 +498,9 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
   const getSummary = (reading: any) => {
     const time = format(new Date(reading.time), 'dd.MM.yyyy HH:mm:ss', { locale: ru });
     let value = '';
-    // @ts-ignore
     if (device?.type === 'water' && reading.in1 !== undefined) {
-        // @ts-ignore
       value = `Объем: ${reading.in1.toFixed(3)} ${device.unit_volume}`;
-      // @ts-ignore
     } else if (device?.type === 'heat' && reading.energy !== undefined) {
-        // @ts-ignore
       value = `Энергия: ${reading.energy.toFixed(3)} ${device.unit_energy}`;
     }
     return `${time} - ${value}`;
@@ -494,7 +518,6 @@ export default function DeviceLogsPage({ params }: { params: { id: string } }) {
         <CardHeader>
           <CardTitle>Логи устройства</CardTitle>
           <CardDescription>
-            {/* @ts-ignore */}
             Отображены последние {Math.min(MAX_LOGS, allReadings.length)} записей для устройства <strong>{device.serial_number}</strong>.
           </CardDescription>
         </CardHeader>
@@ -594,8 +617,7 @@ function DeviceDetailSkeleton() {
     )
 }
 
-export default async function DeviceDetailPage({ params }: { params: { id: string } }) {
-  const deviceId = parseInt(params.id, 10);
+async function DeviceDetailContent({ deviceId }: { deviceId: number }) {
   const device = await getDeviceById(deviceId);
   
   if (!device) {
@@ -604,9 +626,16 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
   
   const readings = await getReadingsForDevice(deviceId);
 
+  return <DeviceReadings device={device} readings={readings} />;
+}
+
+
+export default function DeviceDetailPage({ params }: { params: { id: string } }) {
+  const deviceId = parseInt(params.id, 10);
+
   return (
     <Suspense fallback={<DeviceDetailSkeleton />}>
-        <DeviceReadings device={device} readings={readings} />
+        <DeviceDetailContent deviceId={deviceId} />
     </Suspense>
   );
 }
@@ -687,27 +716,27 @@ function DesktopControls({
     return (
         <>
             <div className='flex gap-2 border-r pr-4'>
-                <Button variant={typeFilter === 'all' ? 'default' : 'outline'} onClick={() => setTypeFilter('all')} size="sm" className="bg-background/80" >
+                <Button variant={typeFilter === 'all' ? 'default' : 'outline'} onClick={() => setTypeFilter('all')} size="sm" >
                     <List className="mr-2 h-4 w-4" /> Все типы
                 </Button>
-                <Button variant={typeFilter === 'water' ? 'default' : 'outline'} onClick={() => setTypeFilter('water')} size="sm" className="bg-background/80" >
+                <Button variant={typeFilter === 'water' ? 'default' : 'outline'} onClick={() => setTypeFilter('water')} size="sm" >
                     <Droplets className="mr-2 h-4 w-4" /> Вода
                 </Button>
-                <Button variant={typeFilter === 'heat' ? 'default' : 'outline'} onClick={() => setTypeFilter('heat')} size="sm" className="bg-background/80" >
+                <Button variant={typeFilter === 'heat' ? 'default' : 'outline'} onClick={() => setTypeFilter('heat')} size="sm" >
                     <Thermometer className="mr-2 h-4 w-4" /> Тепло
                 </Button>
             </div>
              <div className='flex gap-2 border-r pr-4'>
-                <Button variant={statusFilter === 'all' ? 'default' : 'outline'} onClick={() => setStatusFilter('all')} size="sm" className="bg-background/80" >
+                <Button variant={statusFilter === 'all' ? 'default' : 'outline'} onClick={() => setStatusFilter('all')} size="sm" >
                     <List className="mr-2 h-4 w-4" /> Все статусы
                 </Button>
-                <Button variant={statusFilter === 'online' ? 'default' : 'outline'} onClick={() => setStatusFilter('online')} size="sm" className="bg-background/80" >
+                <Button variant={statusFilter === 'online' ? 'default' : 'outline'} onClick={() => setStatusFilter('online')} size="sm" >
                     <CheckCircle className="mr-2 h-4 w-4" /> Онлайн
                 </Button>
-                <Button variant={statusFilter === 'offline' ? 'default' : 'outline'} onClick={() => setStatusFilter('offline')} size="sm" className="bg-background/80" >
+                <Button variant={statusFilter === 'offline' ? 'default' : 'outline'} onClick={() => setStatusFilter('offline')} size="sm" >
                     <XCircle className="mr-2 h-4 w-4" /> Офлайн
                 </Button>
-                 <Button variant={statusFilter === 'warning' ? 'default' : 'outline'} onClick={() => setStatusFilter('warning')} size="sm" className="bg-background/80" >
+                 <Button variant={statusFilter === 'warning' ? 'default' : 'outline'} onClick={() => setStatusFilter('warning')} size="sm" >
                     <AlertTriangle className="mr-2 h-4 w-4" /> Предупреждения
                 </Button>
             </div>
@@ -901,13 +930,12 @@ const MOBILE_COLUMN_VISIBILITY: VisibilityState = {
     actions: true,
 }
 
-function DevicesPageContent() {
+function DevicesPageContent({ initialDevices }: { initialDevices: Device[] }) {
   const searchParams = useSearchParams();
-  const companyId = searchParams.get('companyId');
   const objectNameFromUrl = searchParams.get('object_name');
   const statusFromUrl = searchParams.get('status') as StatusFilter | null;
   
-  const [currentDevices, setCurrentDevices] = React.useState<Device[]>([]);
+  const [currentDevices, setCurrentDevices] = React.useState<Device[]>(initialDevices);
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'water' | 'heat'>('all');
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>(statusFromUrl || 'all');
   const [searchField, setSearchField] = React.useState<keyof Device>('object_name');
@@ -920,9 +948,8 @@ function DevicesPageContent() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
   React.useEffect(() => {
-    const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-    getDevices(companyIdNum).then(setCurrentDevices);
-  }, [companyId]);
+    setCurrentDevices(initialDevices);
+  }, [initialDevices]);
 
   React.useEffect(() => {
     setColumnVisibility(isMobile ? MOBILE_COLUMN_VISIBILITY : DESKTOP_COLUMN_VISIBILITY);
@@ -1026,10 +1053,32 @@ function DevicesPageSkeleton() {
     )
 }
 
+function DevicesPageContainer() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [devices, setDevices] = React.useState<Device[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setLoading(true);
+        getDevices(companyIdNum).then(fetchedDevices => {
+            setDevices(fetchedDevices);
+            setLoading(false);
+        });
+    }, [companyId]);
+
+    if (loading) {
+        return <DevicesPageSkeleton />;
+    }
+
+    return <DevicesPageContent initialDevices={devices} />;
+}
+
 export default function DevicesPage() {
     return (
         <Suspense fallback={<DevicesPageSkeleton />}>
-            <DevicesPageContent />
+            <DevicesPageContainer />
         </Suspense>
     )
 }
@@ -1060,24 +1109,33 @@ import {
 import { useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function GatewaysPageContent() {
+function GatewaysPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
+
+function GatewaysPageContent({ gateways: initialGateways }: { gateways: Device[]}) {
     const searchParams = useSearchParams();
     const searchFieldFromUrl = searchParams.get('search_field') as keyof Device | null;
     const searchValueFromUrl = searchParams.get('search_value');
 
-    const [gateways, setGateways] = React.useState<Device[]>([]);
+    const [gateways, setGateways] = React.useState<Device[]>(initialGateways);
     const columns = useGatewayColumns();
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
     React.useEffect(() => {
-        getDevices().then(allDevices => {
-            setGateways(allDevices.filter(d => d.is_gateway));
-        });
-    }, []);
+        setGateways(initialGateways);
+    }, [initialGateways]);
 
     React.useEffect(() => {
         if (searchFieldFromUrl && searchValueFromUrl) {
             setColumnFilters([{ id: searchFieldFromUrl, value: searchValueFromUrl }]);
+        } else {
+            setColumnFilters([]);
         }
     }, [searchFieldFromUrl, searchValueFromUrl]);
 
@@ -1112,19 +1170,16 @@ function GatewaysPageContent() {
     );
 }
 
-function GatewaysPageSkeleton() {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-96 w-full" />
-        </div>
-    )
+async function GatewaysPageContainer() {
+    const allDevices = await getDevices();
+    const gateways = allDevices.filter(d => d.is_gateway);
+    return <GatewaysPageContent gateways={gateways} />;
 }
 
 export default function GatewaysPage() {
   return (
     <Suspense fallback={<GatewaysPageSkeleton />}>
-      <GatewaysPageContent />
+      <GatewaysPageContainer />
     </Suspense>
   )
 }
@@ -1176,19 +1231,38 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function ObjectsPageContent() {
+function ObjectsPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        </div>
+    )
+}
+
+function ObjectsPageContent({ 
+    initialTree, 
+    initialAllObjects, 
+    initialAllDevices 
+}: { 
+    initialTree: BeliotObject[], 
+    initialAllObjects: BeliotObject[],
+    initialAllDevices: Device[]
+}) {
     const searchParams = useSearchParams();
-    const companyId = searchParams.get('companyId');
     const selectedObjectIdFromUrl = searchParams.get('selected_object_id');
 
-    const [data, setData] = React.useState<BeliotObject[]>([]);
-    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
-    const [allDevices, setAllDevices] = React.useState<Device[]>([]);
+    const [data, setData] = React.useState<BeliotObject[]>(initialTree);
+    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>(initialAllObjects);
+    const [allDevices, setAllDevices] = React.useState<Device[]>(initialAllDevices);
+
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
     const [selectedObject, setSelectedObject] = React.useState<BeliotObject | null>(null);
     const [devicesInSelectedObject, setDevicesInSelectedObject] = React.useState<Device[]>([]);
 
-    const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
     
     // Helper function to recursively get all devices from an object and its children
     const getAllDevicesForObject = React.useCallback((object: BeliotObject, allDevs: Device[]): Device[] => {
@@ -1223,18 +1297,10 @@ function ObjectsPageContent() {
     };
     
     React.useEffect(() => {
-        const fetchData = async () => {
-            const [tree, objects, devices] = await Promise.all([
-                getObjectsTree(companyIdNum),
-                getAllObjects(),
-                getDevices(companyIdNum),
-            ]);
-            setData(tree);
-            setAllObjects(objects);
-            setAllDevices(devices);
-        }
-        fetchData();
-    }, [companyIdNum]);
+        setData(initialTree);
+        setAllObjects(initialAllObjects);
+        setAllDevices(initialAllDevices);
+    }, [initialTree, initialAllObjects, initialAllDevices]);
     
      React.useEffect(() => {
         if (selectedObjectIdFromUrl && data.length > 0 && allObjects.length > 0) {
@@ -1250,6 +1316,9 @@ function ObjectsPageContent() {
                 });
                 setExpanded(newExpanded);
             }
+        } else {
+            setSelectedObject(null);
+            setExpanded({});
         }
     }, [selectedObjectIdFromUrl, data, allObjects]);
 
@@ -1268,7 +1337,7 @@ function ObjectsPageContent() {
         setSelectedObject(row.original);
     };
 
-    const columns = React.useMemo(() => objectColumns(handleRowClick), []);
+    const columns = React.useMemo(() => objectColumns, []);
 
     const table = useReactTable({
         data,
@@ -1311,22 +1380,45 @@ function ObjectsPageContent() {
   );
 }
 
-function ObjectsPageSkeleton() {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-16 w-full" />
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Skeleton className="h-96 w-full" />
-                <Skeleton className="h-96 w-full" />
-            </div>
-        </div>
-    )
+function ObjectsPageContainer() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [loading, setLoading] = React.useState(true);
+    const [tree, setTree] = React.useState<BeliotObject[]>([]);
+    const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
+    const [allDevices, setAllDevices] = React.useState<Device[]>([]);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setLoading(true);
+        Promise.all([
+            getObjectsTree(companyIdNum),
+            getAllObjects(companyIdNum),
+            getDevices(companyIdNum),
+        ]).then(([fetchedTree, fetchedObjects, fetchedDevices]) => {
+            setTree(fetchedTree);
+            setAllObjects(fetchedObjects);
+            setAllDevices(fetchedDevices);
+            setLoading(false);
+        });
+    }, [companyId]);
+
+    if (loading) {
+        return <ObjectsPageSkeleton />;
+    }
+
+    return <ObjectsPageContent 
+        initialTree={tree}
+        initialAllObjects={allObjects}
+        initialAllDevices={allDevices}
+    />;
 }
+
 
 export default function ObjectsPage() {
     return (
         <Suspense fallback={<ObjectsPageSkeleton />}>
-            <ObjectsPageContent />
+            <ObjectsPageContainer />
         </Suspense>
     )
 }
@@ -1341,15 +1433,19 @@ import { ReportForm } from '@/components/reports/report-form';
 import { getAllObjects } from '@/lib/data';
 import { Suspense } from 'react';
 
-export default async function ReportsPage() {
+async function ReportsPageContent() {
   const objects = await getAllObjects();
+  return <ReportForm objects={objects} />;
+}
+
+export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <p className="text-muted-foreground">
         Сформируйте отчеты по объектам и устройствам за выбранный период.
       </p>
       <Suspense fallback={<div>Загрузка формы...</div>}>
-        <ReportForm objects={objects} />
+        <ReportsPageContent />
       </Suspense>
     </div>
   );
@@ -1380,23 +1476,25 @@ import { Suspense } from "react";
 import { type User } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function UsersPageContent() {
-    const searchParams = useSearchParams();
-    const companyId = searchParams.get('companyId');
-    const [currentUsers, setCurrentUsers] = React.useState<User[]>([]);
 
-    React.useEffect(() => {
-        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-        getUsers(companyIdNum).then(setCurrentUsers);
-    }, [companyId]);
+function UsersPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
 
+function UsersPageContent({ users }: { users: User[] }) {
    const table = useReactTable({
-    data: currentUsers,
+    data: users,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
   return (
     <div className="space-y-4">
        <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
@@ -1408,24 +1506,38 @@ function UsersPageContent() {
             </Button>
         </div>
       </div>
-       <DataTable columns={columns} data={currentUsers} table={table} />
+       <DataTable columns={columns} data={users} table={table} />
     </div>
   );
 }
 
-function UsersPageSkeleton() {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-96 w-full" />
-        </div>
-    )
+
+function UsersPageContainer() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [users, setUsers] = React.useState<User[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setLoading(true);
+        getUsers(companyIdNum).then(fetchedUsers => {
+            setUsers(fetchedUsers);
+            setLoading(false);
+        });
+    }, [companyId]);
+
+    if (loading) {
+        return <UsersPageSkeleton />;
+    }
+
+    return <UsersPageContent users={users} />;
 }
 
 export default function UsersPage() {
     return (
         <Suspense fallback={<UsersPageSkeleton />}>
-            <UsersPageContent />
+            <UsersPageContainer />
         </Suspense>
     )
 }
@@ -1539,6 +1651,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Image from 'next/image';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Beliot Dashboard',
@@ -1553,7 +1666,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -1563,16 +1676,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <div className="fixed inset-0 z-[-1] opacity-80">
+        <div className="fixed inset-0 z-[-1] opacity-5">
             <Image
-                src="https://storage.googleapis.com/stedi-assets/belit-background-iot.png"
-                alt="IoT background"
+                src="https://storage.googleapis.com/stedi-assets/belit-bg-tech.png"
+                alt="Tech background"
                 fill
                 className="object-cover"
                 quality={100}
+                priority
             />
         </div>
-        <div className="relative z-0">{children}</div>
+        <Suspense>
+          <div className="relative z-0">{children}</div>
+        </Suspense>
         <Toaster />
       </body>
     </html>
@@ -1698,7 +1814,7 @@ export function CatalogCard({
       <CardFooter>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline-primary">
               <PlusCircle className="mr-2 h-4 w-4" />
               Добавить
             </Button>
@@ -1743,7 +1859,7 @@ export function CatalogCard({
 
 import React from "react";
 import { type ColumnDef, type Row } from "@tanstack/react-table"
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { type Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -1752,11 +1868,12 @@ import { Menu, ChevronsRight, LogIn } from "lucide-react"
 const ActionsCell = ({ row }: { row: Row<Company> }) => {
     const company = row.original;
     const router = useRouter();
+    const pathname = usePathname();
 
     const handleLogin = () => {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(); // Start with fresh params
         params.set("companyId", String(company.id));
-        router.push(`/dashboard?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     return (
@@ -1953,7 +2070,7 @@ import { getReadingsForDevice } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Droplets, Thermometer, BatteryLow, Magnet } from 'lucide-react';
+import { Droplets, Thermometer, BatteryLow, Magnet, AlertTriangle } from 'lucide-react';
 import { type Device, type Reading } from '@/lib/types';
 import React from 'react';
 
@@ -1974,13 +2091,10 @@ const ERROR_FLAGS = {
   LEAK: 1 << 2,        // 4
 };
 
-const getWarningDetails = async (device: Device): Promise<{ text: string; icon: React.ReactNode }> => {
+const getWarningDetails = (device: Device, latestReading: Reading | undefined): { text: string; icon: React.ReactNode } => {
   if (device.status === 'offline') {
     return { text: 'Офлайн', icon: null };
   }
-
-  const readings = await getReadingsForDevice(device.id);
-  const latestReading = readings[readings.length - 1];
 
   if (latestReading) {
     if ((latestReading.error_flags & ERROR_FLAGS.TAMPERING) !== 0) {
@@ -1995,15 +2109,26 @@ const getWarningDetails = async (device: Device): Promise<{ text: string; icon: 
   }
 
   // Fallback for generic warning
-  return { text: 'Предупреждение', icon: null };
+  return { text: 'Предупреждение', icon: <AlertTriangle className="mr-2 h-4 w-4" /> };
 };
 
 function ActivityItem({ device }: { device: Device }) {
     const [warningDetails, setWarningDetails] = React.useState<{ text: string; icon: React.ReactNode } | null>(null);
+    const [latestReading, setLatestReading] = React.useState<Reading | undefined>(undefined);
 
     React.useEffect(() => {
-        getWarningDetails(device).then(setWarningDetails);
-    }, [device]);
+        getReadingsForDevice(device.id).then(readings => {
+            const lastReading = readings.length > 0 ? readings[readings.length - 1] : undefined;
+            setLatestReading(lastReading);
+        });
+    }, [device.id]);
+
+    React.useEffect(() => {
+        if (device) {
+            setWarningDetails(getWarningDetails(device, latestReading));
+        }
+    }, [device, latestReading]);
+
 
     if (!warningDetails) {
         return null; // Or a loading skeleton
@@ -2338,7 +2463,7 @@ export function DeviceReadings({
 
   const columns = readingsColumns(device);
   return (
-    <>
+    <div className="space-y-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-1 space-y-6">
                 <DeviceInfo device={device} readings={readings} />
@@ -2360,7 +2485,7 @@ export function DeviceReadings({
             columns={columns} 
             data={filteredReadings} 
         />
-    </>
+    </div>
   );
 }
 ```
@@ -2469,7 +2594,7 @@ const TempChart = ({ data }: { data: Reading[] }) => (
 
 export function ReadingsCharts({ device, readings }: { device: Device; readings: Reading[] }) {
   if (readings.length === 0) {
-    return <Card><CardHeader><CardTitle>Нет данных</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">Для этого устройства еще нет показаний.</p></CardContent></Card>;
+    return <Card><CardHeader><CardTitle>Нет данных</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">Нет показаний за выбранный период.</p></CardContent></Card>;
   }
 
   return (
@@ -2594,6 +2719,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type VisibilityState,
 } from "@tanstack/react-table"
 
 import {
@@ -2635,6 +2761,7 @@ export function ReadingsTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "time", desc: true },
   ]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
   const table = useReactTable({
     data,
@@ -2643,8 +2770,10 @@ export function ReadingsTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
+      columnVisibility,
     },
     initialState: {
         pagination: {
@@ -2679,7 +2808,7 @@ export function ReadingsTable<TData, TValue>({
                             </TableHead>
                         )
                         })}
-                         <TableHead className="text-right">
+                         <TableHead className="text-right w-[50px]">
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -2907,15 +3036,23 @@ const LatestDataCell = ({ row }: { row: any }) => {
 }
 
 const LastActivityCell = ({ row }: { row: any }) => {
+    const device = row.original;
     const [lastReading, setLastReading] = React.useState<Reading | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
-        getReadingsForDevice(row.original.id).then(readings => {
+        setIsLoading(true);
+        getReadingsForDevice(device.id).then(readings => {
             setLastReading(readings[readings.length - 1] || null);
+            setIsLoading(false);
         });
-    }, [row.original.id]);
+    }, [device.id]);
+    
+    if (isLoading) {
+        return <span className="text-muted-foreground">...</span>;
+    }
 
-    if (!lastReading) {
+    if (!lastReading?.time) {
         return <span className="text-muted-foreground">N/A</span>;
     }
     return format(new Date(lastReading.time), 'dd.MM.yyyy HH:mm');
@@ -3348,40 +3485,38 @@ export function DataTable<TData, TValue>({
                     </TableHead>
                   )
                 })}
-                {table.getAllColumns().some(c => c.getCanHide()) && (
-                    <TableHead className="text-right">
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <Settings className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                                {table
-                                .getAllColumns()
-                                .filter((column) => column.getCanHide())
-                                .map((column) => {
-                                    const header = column.columnDef.header;
-                                    const headerText = typeof header === 'string' ? header : column.id;
-                                    return (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) =>
-                                        column.toggleVisibility(!!value)
-                                        }
-                                    >
-                                        {headerText}
-                                    </DropdownMenuCheckboxItem>
-                                    )
-                                })}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </TableHead>
-                 )}
+                <TableHead className="text-right w-[50px]">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Settings className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Отображение колонок</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                        {table
+                        .getAllColumns()
+                        .filter((column) => column.getCanHide())
+                        .map((column) => {
+                            const header = column.columnDef.header;
+                            const headerText = typeof header === 'string' ? header : column.id;
+                            return (
+                            <DropdownMenuCheckboxItem
+                                key={column.id}
+                                className="capitalize"
+                                checked={column.getIsVisible()}
+                                onCheckedChange={(value) =>
+                                column.toggleVisibility(!!value)
+                                }
+                            >
+                                {headerText}
+                            </DropdownMenuCheckboxItem>
+                            )
+                        })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableHead>
               </TableRow>
             ))}
           </TableHeader>
@@ -3399,7 +3534,7 @@ export function DataTable<TData, TValue>({
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
-                   {table.getAllColumns().some(c => c.getCanHide()) && <TableCell />}
+                   <TableCell />
                 </TableRow>
               ))
             ) : (
@@ -3938,37 +4073,47 @@ export function CreateGatewayForm() {
 'use client';
 
 import * as React from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { getCompanies } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Building, X } from 'lucide-react';
 import { type Company } from '@/lib/types';
+import { Skeleton } from '../ui/skeleton';
 
 export function CompanyContextSwitcher() {
     const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
     const companyId = searchParams.get('companyId');
     
     const [companyName, setCompanyName] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
         if (companyId) {
+            setIsLoading(true);
             const id = parseInt(companyId, 10);
             getCompanies().then((companies: Company[]) => {
                 const currentCompany = companies.find(c => c.id === id);
                 setCompanyName(currentCompany ? currentCompany.name : 'Неизвестная компания');
+                setIsLoading(false);
             });
         } else {
             setCompanyName(null);
+            setIsLoading(false);
         }
     }, [companyId]);
 
     const handleExitContext = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.delete('companyId');
-        // Redirect to dashboard without company context
-        router.push(`/dashboard?${params.toString()}`);
+        // Redirect to the same page but without company context
+        router.push(`${pathname}?${params.toString()}`);
     };
+
+    if (isLoading) {
+        return <Skeleton className="h-8 w-48" />
+    }
 
     if (!companyId || !companyName) {
         return null;
@@ -4004,7 +4149,7 @@ import { Suspense } from 'react';
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-10 flex h-auto shrink-0 flex-col justify-center gap-4 border-b-4 border-primary bg-[#2c2c2c] px-4 text-header-foreground sm:px-6">
+    <header className="sticky top-0 z-10 flex h-auto shrink-0 flex-col justify-center gap-4 border-b-4 border-primary bg-header px-4 text-header-foreground sm:px-6">
        <div className="flex h-16 w-full items-center gap-4">
             <MainNav />
             <div className="ml-auto flex items-center gap-4">
@@ -4280,7 +4425,7 @@ const ActionsCell = ({ row }: { row: any }) => {
     )
 }
 
-export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>[] => [
+export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "name",
     header: "Название",
@@ -4379,7 +4524,7 @@ import { objectTypes } from "@/lib/catalogs";
 const objectSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
   address: z.string().min(1, "Адрес обязателен"),
-  objectType: z.enum(['residential', 'business_center', 'mall', 'medical', 'school', 'kindergarten', 'heating_point', 'warehouse']),
+  objectType: z.string().min(1, "Тип объекта обязателен"),
 });
 
 type ObjectFormValues = z.infer<typeof objectSchema>;
@@ -4444,7 +4589,7 @@ export function CreateObjectForm() {
                 <FormItem>
                   <FormLabel>Адрес</FormLabel>
                   <FormControl>
-                    <Input placeholder="ул. Ленина, д. 1, кв. 10" {...field} />
+                    <Input placeholder="ул. Ленина, д. 1" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -4493,7 +4638,7 @@ export function CreateObjectForm() {
 
 import React from "react"
 import { type ColumnDef } from "@tanstack/react-table"
-import { type Device } from "@/lib/types"
+import { type Device, type Reading } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -4557,6 +4702,42 @@ const ActionsCell = ({ row }: { row: any }) => {
     );
 };
 
+const LatestDataCell = ({ row }: { row: any }) => {
+    const device = row.original;
+    const [latestReading, setLatestReading] = React.useState<Reading | undefined>(undefined);
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        setIsLoading(true);
+        getReadingsForDevice(device.id).then(readings => {
+            setLatestReading(readings[readings.length - 1]);
+            setIsLoading(false);
+        });
+    }, [device.id]);
+
+    if(isLoading) {
+        return <span className="text-muted-foreground">...</span>;
+    }
+
+    if (!latestReading) {
+        return <span className="text-muted-foreground">N/A</span>;
+    }
+
+    let value, unit;
+    if (device.type === 'water' && latestReading.in1) {
+        value = latestReading.in1.toFixed(2);
+        unit = device.unit_volume;
+    } else if (device.type === 'heat' && latestReading.energy) {
+        value = latestReading.energy.toFixed(2);
+        unit = device.unit_energy;
+    } else {
+         return <span className="text-muted-foreground">N/A</span>;
+    }
+
+    return <span>{value} {unit}</span>;
+};
+
+
 export const objectDeviceListColumns: ColumnDef<Device>[] = [
   {
     accessorKey: "object_name",
@@ -4580,28 +4761,7 @@ export const objectDeviceListColumns: ColumnDef<Device>[] = [
   {
     id: "latest_data",
     header: "Показания",
-    cell: async ({ row }) => {
-      const device = row.original;
-      const readings = await getReadingsForDevice(device.id);
-      const latestReading = readings[readings.length - 1];
-
-      if (!latestReading) {
-        return <span className="text-muted-foreground">N/A</span>;
-      }
-
-      let value, unit;
-      if (device.type === 'water' && latestReading.in1) {
-        value = latestReading.in1.toFixed(2);
-        unit = device.unit_volume;
-      } else if (device.type === 'heat' && latestReading.energy) {
-        value = latestReading.energy.toFixed(2);
-        unit = device.unit_energy;
-      } else {
-         return <span className="text-muted-foreground">N/A</span>;
-      }
-
-      return <span>{value} {unit}</span>;
-    },
+    cell: LatestDataCell
   },
   {
     accessorKey: "status",
@@ -4733,11 +4893,12 @@ const reportSchema = z.object({
   objectId: z.string().min(1, { message: 'Необходимо выбрать объект' }),
   dateRange: z
     .object({
-      from: z.date(),
-      to: z.date(),
+      from: z.date().optional(),
+      to: z.date().optional(),
     })
     .refine((data) => data.from && data.to, {
       message: 'Необходимо выбрать период',
+      path: ['from'], // Assign error to one of the fields
     }),
 });
 
@@ -4756,9 +4917,9 @@ export function ReportForm({ objects }: { objects: BeliotObject[] }) {
       title: 'Отчет формируется',
       description: `Запрошен отчет для объекта ID: ${
         data.objectId
-      } за период с ${format(data.dateRange.from, 'PPP', {
+      } за период с ${format(data.dateRange.from!, 'PPP', {
         locale: ru,
-      })} по ${format(data.dateRange.to, 'PPP', { locale: ru })}.`,
+      })} по ${format(data.dateRange.to!, 'PPP', { locale: ru })}.`,
     });
   };
 
@@ -4985,6 +5146,7 @@ import { useToast } from "@/hooks/use-toast";
 import { type BeliotObject, type Device } from "@/lib/types";
 import { getAllObjects, getDevices as getAllDevices, getGatewayForDevice } from "@/lib/data";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "../ui/skeleton";
 
 type Entity = BeliotObject | Device;
 type EntityName = "object" | "device" | "gateway";
@@ -4994,21 +5156,34 @@ const deviceSchema = z.object({
   gatewayId: z.string().optional(),
 });
 
+const objectSchema = z.object({
+  name: z.string().min(1, "Название обязательно"),
+  address: z.string().min(1, "Адрес обязателен"),
+});
+
 
 const schemas = {
   device: deviceSchema,
-  // Add other schemas if needed
+  object: objectSchema,
+  gateway: deviceSchema, // Gateways are devices
 };
 
 const getFormDefaultValues = async (entityName: EntityName, entity: Entity) => {
     switch (entityName) {
         case 'device':
+        case 'gateway':
             const dev = entity as Device;
             const gateway = await getGatewayForDevice(dev);
             return {
                 objectId: dev.objectId ? String(dev.objectId) : "",
-                gatewayId: gateway ? String(gateway.id) : undefined,
+                gatewayId: gateway ? String(gateway.id) : "",
             };
+        case 'object':
+            const obj = entity as BeliotObject;
+            return {
+                name: obj.name,
+                address: obj.address,
+            }
         default:
             return {};
     }
@@ -5026,59 +5201,48 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
   const { toast } = useToast();
   const [allObjects, setAllObjects] = React.useState<BeliotObject[]>([]);
   const [gateways, setGateways] = React.useState<Device[]>([]);
-  
-  // This form is only for devices for now, as per the user's request.
-  if (entityName !== 'device') {
-    return null;
-  }
+  const [isLoading, setIsLoading] = React.useState(true);
   
   // @ts-ignore
   const schema = schemas[entityName];
-  const device = entity as Device;
 
-  const form = useForm<z.infer<typeof deviceSchema>>({
+  const form = useForm({
     resolver: zodResolver(schema),
   });
   
   React.useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true);
       const fetchData = async () => {
-          const [objects, allDevs] = await Promise.all([
-              getAllObjects(),
-              getAllDevices()
-          ]);
-          setAllObjects(objects);
-          setGateways(allDevs.filter(d => d.is_gateway));
+          if (entityName === 'device' || entityName === 'gateway') {
+            const [objects, allDevs] = await Promise.all([
+                getAllObjects(),
+                getAllDevices()
+            ]);
+            setAllObjects(objects);
+            setGateways(allDevs.filter(d => d.is_gateway));
+          }
+          const defaultValues = await getFormDefaultValues(entityName, entity);
+          form.reset(defaultValues);
+          setIsLoading(false);
       }
       fetchData();
-  }, []);
-
-  React.useEffect(() => {
-    if (entity && isOpen) {
-        getFormDefaultValues(entityName, entity).then(defaultValues => {
-             form.reset(defaultValues);
-        });
     }
   }, [entity, entityName, isOpen, form]);
 
-  function onSubmit(data: z.infer<typeof deviceSchema>) {
-    console.log("Updating entity:", data);
+  function onSubmit(data: any) {
+    console.log(`Updating ${entityName}:`, data);
     toast({
       title: "Данные обновлены",
-      description: `Информация для устройства ${device.serial_number} была успешно обновлена.`,
+      description: `Информация была успешно обновлена.`,
     });
     onOpenChange(false);
   }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Редактировать привязки</DialogTitle>
-          <DialogDescription>
-            Измените объект или шлюз для устройства.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4 text-sm">
+  
+  const renderDeviceFields = () => {
+      const device = entity as Device;
+      return (
+        <>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Идентификатор</Label>
                 <Input value={device.external_id} readOnly className="col-span-3 font-mono" />
@@ -5087,16 +5251,13 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                 <Label className="text-right">Серийный номер</Label>
                 <Input value={device.serial_number} readOnly className="col-span-3 font-mono" />
             </div>
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
+            <FormField
                 control={form.control}
                 name="objectId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Объект</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите объект" />
@@ -5121,13 +5282,14 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Шлюз (необязательно)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите шлюз" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="">Без привязки</SelectItem>
                         {gateways.map((gw) => (
                           <SelectItem key={gw.id} value={String(gw.id)}>
                             {gw.serial_number} ({gw.object_name})
@@ -5139,12 +5301,76 @@ export function EditForm({ entity, entityName, isOpen, onOpenChange }: EditFormP
                   </FormItem>
                 )}
               />
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Отмена</Button>
-              <Button type="submit">Сохранить</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        </>
+      )
+  }
+
+    const renderObjectFields = () => (
+        <>
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Название объекта</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Название..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Адрес</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Адрес..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </>
+    );
+
+  const getTitle = () => {
+      switch (entityName) {
+          case 'device': return 'Редактировать привязки устройства';
+          case 'gateway': return 'Редактировать привязки шлюза';
+          case 'object': return 'Редактировать объект';
+          default: return 'Редактировать';
+      }
+  }
+
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{getTitle()}</DialogTitle>
+        </DialogHeader>
+        {isLoading ? (
+            <div className="space-y-4 py-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+        ) : (
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                {entityName === 'device' && renderDeviceFields()}
+                {entityName === 'gateway' && renderDeviceFields()}
+                {entityName === 'object' && renderObjectFields()}
+                <DialogFooter className="pt-4">
+                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Отмена</Button>
+                <Button type="submit">Сохранить</Button>
+                </DialogFooter>
+            </form>
+            </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -5552,7 +5778,7 @@ const buttonVariants = cva(
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         "outline-primary":
-            "border border-primary text-primary bg-background/80 hover:bg-primary hover:text-primary-foreground",
+            "border border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -5711,10 +5937,10 @@ const CardHeader = React.forwardRef<
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <h3
     ref={ref}
     className={cn(
       "text-2xl font-semibold leading-none tracking-tight",
@@ -5726,10 +5952,10 @@ const CardTitle = React.forwardRef<
 CardTitle.displayName = "CardTitle"
 
 const CardDescription = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <p
     ref={ref}
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
@@ -8768,274 +8994,67 @@ export const readingTypes: { [key: string]: CatalogItem[] } = {
 ```ts
 import { type Device, type Reading, type BeliotObject, type User, type Company } from './types';
 
-// Mock data remains here, but is not exported directly.
-const mockObjects: BeliotObject[] = [
-  { id: 1, name: 'Жилой дом "Центральный"', address: 'ул. Ленина, д. 1, кв. 10', deviceCount: 0, objectType: 'residential', companyId: 2 },
-  { id: 2, name: 'Тепловой пункт №3', address: 'пр. Мира, д. 25', deviceCount: 0, objectType: 'heating_point', parentId: 1, companyId: 2 },
-  { id: 3, name: 'Бизнес-центр "Орион"', address: 'ул. Садовая, д. 5', deviceCount: 0, objectType: 'business_center', companyId: 4 },
-  { id: 4, name: 'Школа №5', address: 'ул. Космонавтов, д. 12', deviceCount: 0, objectType: 'school' },
-  { id: 5, name: 'Детский сад "Солнышко"', address: 'ул. Парковая, д. 33', deviceCount: 0, objectType: 'kindergarten', parentId: 4 },
-  { id: 6, name: 'Складской комплекс "Запад"', address: 'Индустриальное ш., 1', deviceCount: 0, objectType: 'warehouse', companyId: 4 },
-  { id: 8, name: 'Большой дом', address: 'ул. Строителей, д. 100', deviceCount: 0, objectType: 'residential', companyId: 5 },
-];
-
-const mockDevices: Device[] = [
-  {
-    id: 1, external_id: '8A3B4C5D6E7F8G9H', serial_number: 'SN-001-A', type: 'water', model: 'RSVU-1400', channel_type: 'lora', address: 'ул. Ленина, д. 1, кв. 10', object_name: 'Жилой дом "Центральный"', status: 'online', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-01-15T09:30:00Z', objectId: 1, attributes: [{ name: 'Лицевой счет', value: '100-200-301' }, { name: 'Дата поверки', value: '2025-10-01' }], is_gateway: false,
-  },
-  {
-    id: 2, external_id: '9H8G7F6E5D4C3B2A', serial_number: 'SN-GW-002-B', type: 'heat', model: 'Beliot Gateway v1', channel_type: 'gsm', address: 'пр. Мира, д. 25', object_name: 'Тепловой пункт №3', status: 'offline', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-02-20T11:00:00Z', objectId: 2, is_gateway: true,
-  },
-  {
-    id: 3, external_id: '1A2B3C4D5E6F7G8H', serial_number: 'SN-003-C', type: 'water', model: 'AquaFlow-500', channel_type: 'rs485', address: 'ул. Садовая, д. 5', object_name: 'Бизнес-центр "Орион"', status: 'offline', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-03-10T14:00:00Z', objectId: 3, attributes: [{ name: 'Тариф', value: 'Коммерческий' }], is_gateway: false,
-  },
-  {
-    id: 4, external_id: 'ABC123DEF456GHI7', serial_number: 'SN-004-D', type: 'heat', model: 'Thermo-9', channel_type: 'lora', address: 'ул. Космонавтов, д. 12', object_name: 'Школа №5', status: 'warning', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-04-01T18:45:00Z', objectId: 4, is_gateway: false,
-  },
-  {
-    id: 5, external_id: 'ZYX987WVU654TSR3', serial_number: 'SN-005-E', type: 'water', model: 'RSVU-1400', channel_type: 'nbiot', address: 'ул. Парковая, д. 33', object_name: 'Детский сад "Солнышко"', status: 'warning', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-05-22T08:00:00Z', objectId: 5, is_gateway: false,
-  },
-  {
-    id: 6, external_id: 'LORAWAN-DEVICE-001', serial_number: 'SN-GW-006-F', type: 'heat', model: 'LoRaMaster-3000', channel_type: 'lora', address: 'Индустриальное ш., 1', object_name: 'Складской комплекс "Запад"', status: 'online', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-06-30T12:00:00Z', objectId: 6, is_gateway: true,
-  },
-  {
-    id: 7, external_id: 'ZYX987WVU654TSR4', serial_number: 'SN-007-G', type: 'water', model: 'RSVU-1400', channel_type: 'nbiot', address: 'ул. Ленина, д. 1, кв. 11', object_name: 'Жилой дом "Центральный"', status: 'warning', unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2023-05-22T08:00:00Z', objectId: 1, is_gateway: false,
-  },
-];
-
-const mockUsers: User[] = [
-    { id: 1, email: 'admin@beliot.local', full_name: 'Администратор', role: 'admin' },
-    { id: 2, email: 'user1@example.com', full_name: 'Иван Петров', role: 'user', companyId: 2 },
-    { id: 3, email: 'viewer@example.com', full_name: 'Анна Сидорова', role: 'viewer', companyId: 4 },
-];
-
-const mockCompanies: Company[] = [
-    { id: 1, name: 'Управляющая компания "Наш Дом"', unp: '190123456' },
-    { id: 2, name: 'ЖЭС №10', unp: '190123457', parentId: 1 },
-    { id: 3, name: 'ЖЭС №12', unp: '190123458', parentId: 1 },
-    { id: 4, name: 'ООО "Девелопер-Строй"', unp: '190987654' },
-    { id: 5, name: 'ТС "Зеленый квартал"', unp: '190987655', parentId: 4 },
-];
-
-// --- Generation for the large apartment building ---
-const bigHouseId = 8;
-const bigHouse = mockObjects.find(o => o.id === bigHouseId)!;
-let objectIdCounter = 100;
-let deviceIdCounter = 1000;
-
-for (let i = 1; i <= 80; i++) {
-    const apartmentId = objectIdCounter++;
-    const apartmentObject: BeliotObject = {
-        id: apartmentId, name: `Квартира ${i}`, address: `${bigHouse.address}, кв. ${i}`, deviceCount: 3, objectType: 'residential', parentId: bigHouseId, companyId: bigHouse.companyId
-    };
-    mockObjects.push(apartmentObject);
-
-    const statuses: Device['status'][] = ['online', 'offline', 'warning'];
-    const deterministicStatus = (id: number) => statuses[id % statuses.length];
-
-    const device1Id = deviceIdCounter++;
-    mockDevices.push({
-        id: device1Id, external_id: `BD-APT${i}-W1`, serial_number: `SN-W1-${1000 + i}`, type: 'water', model: 'AquaFlow-500', channel_type: 'lora', address: apartmentObject.address, object_name: apartmentObject.name, status: deterministicStatus(device1Id), unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2024-07-10T10:00:00Z', objectId: apartmentId, is_gateway: false
-    });
-    const device2Id = deviceIdCounter++;
-    mockDevices.push({
-        id: device2Id, external_id: `BD-APT${i}-W2`, serial_number: `SN-W2-${2000 + i}`, type: 'water', model: 'AquaFlow-500', channel_type: 'lora', address: apartmentObject.address, object_name: apartmentObject.name, status: deterministicStatus(device2Id), unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2024-07-10T10:00:00Z', objectId: apartmentId, is_gateway: false
-    });
-    const device3Id = deviceIdCounter++;
-    mockDevices.push({
-        id: device3Id, external_id: `BD-APT${i}-H1`, serial_number: `SN-H1-${3000 + i}`, type: 'heat', model: 'WarmEx-200', channel_type: 'lora', address: apartmentObject.address, object_name: apartmentObject.name, status: deterministicStatus(device3Id), unit_volume: 'м³', unit_energy: 'ГДж', unit_temperature: '°C', created_at: '2024-07-10T10:00:00Z', objectId: apartmentId, is_gateway: false
-    });
-}
-
-const generateReadings = (deviceId: number, deviceType: 'water' | 'heat', numReadings: number): Reading[] => {
-  const readings: Reading[] = [];
-  const now = new Date();
-  const pseudoRandom = (seed: number) => { let x = Math.sin(seed) * 10000; return x - Math.floor(x); };
-  for (let i = 0; i < numReadings; i++) {
-    const time = new Date(now.getTime() - i * 60 * 60 * 1000).toISOString();
-    const seed = deviceId + i;
-    let error_flags = 0;
-    if (deviceId % 10 === 4) error_flags |= 1;
-    if (deviceId % 10 === 5) error_flags |= 2;
-    if (deviceId % 10 === 7) error_flags |= 2;
-
-    const reading: Reading = {
-      time, device_id: deviceId, battery_percent: (deviceId % 10 === 4) ? 9 - (i*0.5) : 80 - i * 0.5, rssi: -70 - Math.floor(pseudoRandom(seed + 1) * 10), error_flags,
-    };
-    if (deviceType === 'water') {
-      reading.in1 = 1000 + i * 10 + pseudoRandom(seed + 2) * 5;
-      reading.in2 = 800 + i * 8 + pseudoRandom(seed + 3) * 4;
-      reading.fflow1 = 1.2 + Math.sin(i / 10) * 0.5;
-      reading.fflow2 = 1.0 + Math.cos(i / 10) * 0.4;
-    } else {
-      reading.energy = 500 + i * 5 + pseudoRandom(seed + 4) * 3;
-      reading.mass1 = 2000 + i * 20 + pseudoRandom(seed + 5) * 10;
-      reading.temp_supply = 65 + Math.sin(i / 20) * 5;
-      reading.temp_return = 55 + Math.cos(i / 20) * 5;
-    }
-    readings.push(reading);
-  }
-  return readings.reverse();
-};
-
-const mockReadings: Reading[] = mockDevices.flatMap((device) => generateReadings(device.id, device.type, 72));
-
 // ===================================================================================
 // ASYNCHRONOUS DATA FUNCTIONS - This is the integration point for the backend.
+// Replace the body of these functions with your actual API calls.
 // ===================================================================================
 
-const calculateObjectDeviceCounts = async (): Promise<BeliotObject[]> => {
-    const allDevices = await getDevices();
-    const allObjects = mockObjects; // Use the base mock objects
-
-    const objectsWithCounts = new Map<number, BeliotObject>();
-
-    allObjects.forEach(obj => {
-        objectsWithCounts.set(obj.id, {
-            ...obj, deviceCount: 0, onlineCount: 0, offlineCount: 0, warningCount: 0,
-        });
-    });
-
-    allDevices.forEach(device => {
-        let currentObject = objectsWithCounts.get(device.objectId);
-        if(currentObject) {
-            // This loop will aggregate counts up the hierarchy tree
-            while(currentObject) {
-                currentObject.deviceCount++;
-                switch (device.status) {
-                    case 'online': currentObject.onlineCount!++; break;
-                    case 'offline': currentObject.offlineCount!++; break;
-                    case 'warning': currentObject.warningCount!++; break;
-                }
-                if(!currentObject.parentId) break;
-                currentObject = objectsWithCounts.get(currentObject.parentId);
-            }
-        }
-    });
-
-    return Array.from(objectsWithCounts.values());
-};
-
-const getObjectIdsForCompany = async (companyId: number): Promise<number[]> => {
-    const allCompanies = await getCompanies();
-    const allCompanyIds: number[] = [companyId];
-    const queue = [companyId];
-    while(queue.length > 0) {
-        const currentId = queue.shift()!;
-        const children = allCompanies.filter(c => c.parentId === currentId);
-        children.forEach(c => {
-            allCompanyIds.push(c.id);
-            queue.push(c.id);
-        });
-    }
-    const allObjs = await getAllObjects();
-    return allObjs.filter(o => o.companyId && allCompanyIds.includes(o.companyId)).map(o => o.id);
-}
-
-const getDeviceCompanyId = async (device: Device): Promise<number | undefined> => {
-    const allObjs = await getAllObjects();
-    const deviceObject = allObjs.find(o => o.id === device.objectId);
-    if (!deviceObject) return undefined;
-
-    let currentObject = deviceObject;
-    while(currentObject.parentId) {
-        const parent = allObjs.find(o => o.id === currentObject.parentId);
-        if (!parent) break;
-        currentObject = parent;
-    }
-    return currentObject.companyId;
-}
-
 export async function getDevices(companyId?: number): Promise<Device[]> {
-    if (!companyId) return mockDevices;
-
-    const filteredDevices: Device[] = [];
-    for(const d of mockDevices) {
-        const devCompanyId = await getDeviceCompanyId(d);
-        if (devCompanyId === companyId) {
-            filteredDevices.push(d);
-        }
-    }
-    return filteredDevices;
+  // TODO: Replace with your API call.
+  // Example:
+  // const response = await fetch(`/api/devices?companyId=${companyId}`);
+  // const data = await response.json();
+  // return data;
+  console.log(`Fetching devices for companyId: ${companyId}`);
+  return [];
 }
 
 export async function getAllObjects(companyId?: number): Promise<BeliotObject[]> {
-    const objectsWithCounts = await calculateObjectDeviceCounts();
-    if (!companyId) return objectsWithCounts;
-    const objectIdsOfCompany = await getObjectIdsForCompany(companyId);
-    return objectsWithCounts.filter(o => objectIdsOfCompany.includes(o.id));
+  // TODO: Replace with your API call to get all objects, optionally filtered by companyId.
+  console.log(`Fetching all objects for companyId: ${companyId}`);
+  return [];
 }
 
 export async function getUsers(companyId?: number): Promise<User[]> {
-    if (!companyId) return mockUsers;
-    return mockUsers.filter(u => u.companyId === companyId);
+  // TODO: Replace with your API call.
+  console.log(`Fetching users for companyId: ${companyId}`);
+  return [];
 }
 
 export async function getCompanies(): Promise<Company[]> {
-    return mockCompanies;
+  // TODO: Replace with your API call.
+  return [];
 }
 
 export async function getObjectsTree(companyId?: number): Promise<BeliotObject[]> {
-  const relevantObjects = await getAllObjects(companyId);
-  const objectsById = new Map(relevantObjects.map(obj => [obj.id, { ...obj, children: [] as BeliotObject[] }]));
-  const roots: BeliotObject[] = [];
-
-  relevantObjects.forEach(obj => {
-    const current = objectsById.get(obj.id)!;
-    if (obj.parentId && objectsById.has(obj.parentId)) {
-      const parent = objectsById.get(obj.parentId)!;
-      parent.children.push(current);
-    } else {
-      roots.push(current);
-    }
-  });
-
-  return roots.filter(obj => !obj.parentId || !objectsById.has(obj.parentId));
+  // TODO: Replace with your API call.
+  // This function should fetch objects and build a tree structure.
+  console.log(`Fetching object tree for companyId: ${companyId}`);
+  return [];
 }
 
 export async function getCompaniesTree(): Promise<Company[]> {
-  const allCompanies = await getCompanies();
-  const companiesById = new Map(allCompanies.map(c => [c.id, { ...c, children: [] as Company[] }]));
-  const roots: Company[] = [];
-
-  allCompanies.forEach(company => {
-    const current = companiesById.get(company.id)!;
-    if (company.parentId && companiesById.has(company.parentId)) {
-      const parent = companiesById.get(company.parentId)!;
-      parent.children.push(current);
-    } else {
-      roots.push(current);
-    }
-  });
-
-  return roots;
+  // TODO: Replace with your API call.
+  // This function should fetch companies and build a tree structure.
+  return [];
 }
 
 export async function getDeviceById(id: number): Promise<Device | undefined> {
-  const allDevices = await getDevices();
-  return allDevices.find((d) => d.id === id);
+  // TODO: Replace with your API call.
+  console.log(`Fetching device by id: ${id}`);
+  return undefined;
 }
 
 export async function getReadingsForDevice(deviceId: number): Promise<Reading[]> {
-  return mockReadings.filter((r) => r.device_id === deviceId);
+  // TODO: Replace with your API call.
+  console.log(`Fetching readings for deviceId: ${deviceId}`);
+  return [];
 }
 
 export async function getGatewayForDevice(device: Device): Promise<Device | undefined> {
-    if (device.is_gateway || !device.objectId) {
-        return undefined;
-    }
-    const allDevices = await getDevices();
-    const allObjects = await getAllObjects();
-    // Find the gateway that is on the same object or a parent object.
-    let currentObjectId: number | undefined | null = device.objectId;
-    while (currentObjectId) {
-        const gateway = allDevices.find(d => d.is_gateway && d.objectId === currentObjectId);
-        if (gateway) {
-            return gateway;
-        }
-        const currentObject = allObjects.find(o => o.id === currentObjectId);
-        currentObjectId = currentObject?.parentId;
-    }
+    // TODO: Replace with your API call.
+    // This logic might need to be implemented on the backend.
+    console.log(`Fetching gateway for device: ${device.id}`);
     return undefined;
 };
 ```
@@ -9083,7 +9102,7 @@ export type BeliotObject = {
     id: number;
     name: string;
     address: string;
-    objectType: 'residential' | 'business_center' | 'mall' | 'medical' | 'school' | 'kindergarten' | 'heating_point' | 'warehouse';
+    objectType: string;
     deviceCount: number;
     onlineCount?: number;
     offlineCount?: number;
@@ -9120,7 +9139,7 @@ export type Device = {
   serial_number: string;
   type: 'water' | 'heat';
   model: string;
-  channel_type: 'lora' | 'nbiot' | 'rs485';
+  channel_type: string;
   address: string;
   object_name: string;
   status: 'online' | 'offline' | 'warning';
@@ -9170,54 +9189,6 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-```
-
----
-
-### `src/next.config.ts`
-
-```ts
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'storage.googleapis.com',
-        port: '',
-        pathname: '/**',
-      }
-    ],
-  },
-};
-
-export default nextConfig;
 ```
 
 ---
