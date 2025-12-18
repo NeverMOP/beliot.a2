@@ -2,7 +2,7 @@ export type BeliotObject = {
     id: number;
     name: string;
     address: string;
-    objectType: 'residential' | 'business_center' | 'mall' | 'medical' | 'school' | 'kindergarten' | 'heating_point' | 'warehouse';
+    objectType: string;
     deviceCount: number;
     onlineCount?: number;
     offlineCount?: number;
@@ -39,7 +39,7 @@ export type Device = {
   serial_number: string;
   type: 'water' | 'heat';
   model: string;
-  channel_type: 'lora' | 'nbiot' | 'rs485';
+  channel_type: string;
   address: string;
   object_name: string;
   status: 'online' | 'offline' | 'warning';
@@ -48,6 +48,8 @@ export type Device = {
   unit_temperature: '°C';
   created_at: string;
   objectId: number;
+  companyId?: number;
+  gatewayId?: number;
   attributes?: DeviceAttribute[];
   is_gateway?: boolean;
 };
