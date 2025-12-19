@@ -1,10 +1,8 @@
 'use client'
 
-import { getUsers } from "@/lib/data";
+import { getUsers, getCompanies } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns } from "@/components/users/columns";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import * as React from 'react';
 import { 
     getCoreRowModel,
@@ -14,41 +12,10 @@ import {
 } from '@tanstack/react-table';
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { type User } from "@/lib/types";
+import { type User, type Company } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateUserForm } from "@/components/users/create-user-form";
 
-function UsersPageContent() {
-    const searchParams = useSearchParams();
-    const companyId = searchParams.get('companyId');
-    const [currentUsers, setCurrentUsers] = React.useState<User[]>([]);
-
-    React.useEffect(() => {
-        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
-        getUsers(companyIdNum).then(setCurrentUsers);
-    }, [companyId]);
-
-   const table = useReactTable({
-    data: currentUsers,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
-  return (
-    <div className="space-y-4">
-       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
-        <h1 className="text-lg font-semibold text-secondary-foreground">Пользователи</h1>
-        <div className="ml-auto flex items-center gap-2">
-            <Button disabled>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Создать пользователя
-            </Button>
-        </div>
-      </div>
-       <DataTable columns={columns} data={currentUsers} table={table} />
-    </div>
-  );
-}
 
 function UsersPageSkeleton() {
     return (
@@ -59,10 +26,60 @@ function UsersPageSkeleton() {
     )
 }
 
+function UsersPageContent({ users, companies }: { users: User[], companies: Company[] }) {
+   const table = useReactTable({
+    data: users,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  return (
+    <div className="space-y-4">
+       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
+        <h1 className="text-lg font-semibold text-secondary-foreground">Пользователи</h1>
+        <div className="ml-auto flex items-center gap-2">
+            <CreateUserForm companies={companies} />
+        </div>
+      </div>
+       <DataTable columns={columns} data={users} table={table} />
+    </div>
+  );
+}
+
+
+function UsersPageContainer() {
+    const searchParams = useSearchParams();
+    const companyId = searchParams.get('companyId');
+    const [users, setUsers] = React.useState<User[]>([]);
+    const [companies, setCompanies] = React.useState<Company[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const companyIdNum = companyId ? parseInt(companyId, 10) : undefined;
+        setLoading(true);
+        Promise.all([
+            getUsers(companyIdNum),
+            getCompanies()
+        ]).then(([fetchedUsers, fetchedCompanies]) => {
+            setUsers(fetchedUsers);
+            setCompanies(fetchedCompanies);
+            setLoading(false);
+        });
+    }, [companyId]);
+
+    if (loading) {
+        return <UsersPageSkeleton />;
+    }
+
+    return <UsersPageContent users={users} companies={companies} />;
+}
+
 export default function UsersPage() {
     return (
         <Suspense fallback={<UsersPageSkeleton />}>
-            <UsersPageContent />
+            <UsersPageContainer />
         </Suspense>
     )
 }

@@ -3,8 +3,6 @@
 import { getCompaniesTree } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns as companyColumns } from "@/components/companies/columns";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import * as React from 'react';
 import { type Company } from "@/lib/types";
 import { 
@@ -16,23 +14,25 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CreateCompanyForm } from "@/components/companies/create-company-form";
 
-function CompaniesPageContent() {
-    const [data, setData] = React.useState<Company[]>([]);
+function CompaniesPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
+}
+
+function CompaniesPageContent({ companies }: { companies: Company[] }) {
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
-
-    React.useEffect(() => {
-        const fetchData = async () => {
-            const tree = await getCompaniesTree();
-            setData(tree);
-        };
-        fetchData();
-    }, []);
 
     const columns = React.useMemo(() => companyColumns, []);
 
     const table = useReactTable({
-        data,
+        data: companies,
         columns,
         state: {
           expanded,
@@ -50,22 +50,24 @@ function CompaniesPageContent() {
       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
         <h1 className="text-lg font-semibold text-secondary-foreground">Компании</h1>
         <div className="ml-auto flex items-center gap-2">
-            <Button disabled variant="outline-primary">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Создать компанию
-            </Button>
+            <CreateCompanyForm />
         </div>
       </div>
-      <DataTable columns={columns} data={data} table={table} />
+      <DataTable columns={columns} data={companies} table={table} />
     </div>
   );
 }
 
 
+async function CompaniesPageContainer() {
+    const tree = await getCompaniesTree();
+    return <CompaniesPageContent companies={tree} />
+}
+
 export default function CompaniesPage() {
     return (
-        <Suspense fallback={<div>Загрузка...</div>}>
-            <CompaniesPageContent />
+        <Suspense fallback={<CompaniesPageSkeleton />}>
+            <CompaniesPageContainer />
         </Suspense>
     )
 }
