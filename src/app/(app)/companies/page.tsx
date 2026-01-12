@@ -1,6 +1,5 @@
 'use client'
 
-import { getCompaniesTree } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns as companyColumns } from "@/components/companies/columns";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ import {
 } from '@tanstack/react-table';
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreateCompanyForm } from "@/components/companies/create-company-form";
+import { getCompaniesTree } from "@/lib/data";
 
 function CompaniesPageSkeleton() {
     return (
@@ -52,7 +51,10 @@ function CompaniesPageContent({ companies }: { companies: Company[] }) {
       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
         <h1 className="text-lg font-semibold text-secondary-foreground">Компании</h1>
         <div className="ml-auto flex items-center gap-2">
-            <CreateCompanyForm />
+            <Button disabled variant="outline-primary">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Создать компанию
+            </Button>
         </div>
       </div>
       <DataTable columns={columns} data={companies} table={table} />
