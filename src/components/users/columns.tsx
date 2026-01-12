@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { type ColumnDef } from "@tanstack/react-table"
-import { type User } from "@/lib/types"
+import { type User, type Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Menu, Check, X, ShieldQuestion } from "lucide-react"
@@ -23,13 +23,17 @@ const roleVariant: Record<User['role'], 'default' | 'secondary' | 'outline'> = {
 }
 
 const ActionsCell = ({ row }: { row: any }) => {
-    const user = row.original;
+    const user = row.original as User;
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
-    const [companies, setCompanies] = React.useState<any[]>([]);
+    const [companies, setCompanies] = React.useState<Company[]>([]);
 
     React.useEffect(() => {
-        getCompanies().then(setCompanies);
-    }, []);
+        // Fetch companies only when the dialog is about to be opened,
+        // or if it has been opened before.
+        if (isEditDialogOpen && companies.length === 0) {
+             getCompanies().then(setCompanies);
+        }
+    }, [isEditDialogOpen, companies.length]);
 
     return (
         <>
