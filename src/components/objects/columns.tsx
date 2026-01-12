@@ -83,7 +83,7 @@ const ActionsCell = ({ row }: { row: any }) => {
     )
 }
 
-export const columns = (onRowClick: (row: any) => void): ColumnDef<BeliotObject>[] => [
+export const columns: ColumnDef<BeliotObject>[] = [
   {
     accessorKey: "name",
     header: "Название",

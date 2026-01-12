@@ -112,15 +112,23 @@ const LatestDataCell = ({ row }: { row: any }) => {
 }
 
 const LastActivityCell = ({ row }: { row: any }) => {
+    const device = row.original;
     const [lastReading, setLastReading] = React.useState<Reading | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
-        getReadingsForDevice(row.original.id).then(readings => {
+        setIsLoading(true);
+        getReadingsForDevice(device.id).then(readings => {
             setLastReading(readings[readings.length - 1] || null);
+            setIsLoading(false);
         });
-    }, [row.original.id]);
+    }, [device.id]);
+    
+    if (isLoading) {
+        return <span className="text-muted-foreground">...</span>;
+    }
 
-    if (!lastReading) {
+    if (!lastReading?.time) {
         return <span className="text-muted-foreground">N/A</span>;
     }
     return format(new Date(lastReading.time), 'dd.MM.yyyy HH:mm');
