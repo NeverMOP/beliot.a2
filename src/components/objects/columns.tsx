@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Menu, ChevronsRight, Eye } from "lucide-react"
 import { EditForm } from "../shared/edit-form"
 
-const objectTypeRussian: Record<BeliotObject['objectType'], string> = {
+const objectTypeRussian: Record<string, string> = {
     residential: 'Жилой дом',
     business_center: 'Бизнес-центр',
     mall: 'Торговый центр',

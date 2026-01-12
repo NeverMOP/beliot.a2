@@ -20,6 +20,18 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function ObjectsPageSkeleton() {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        </div>
+    )
+}
+
 function ObjectsPageContent({ 
     initialTree, 
     initialAllObjects, 
@@ -93,6 +105,9 @@ function ObjectsPageContent({
                 });
                 setExpanded(newExpanded);
             }
+        } else {
+            setSelectedObject(null);
+            setExpanded({});
         }
     }, [selectedObjectIdFromUrl, data, allObjects]);
 
@@ -111,7 +126,7 @@ function ObjectsPageContent({
         setSelectedObject(row.original);
     };
 
-    const columns = React.useMemo(() => objectColumns(handleRowClick), []);
+    const columns = React.useMemo(() => objectColumns, []);
 
     const table = useReactTable({
         data,
@@ -154,18 +169,6 @@ function ObjectsPageContent({
   );
 }
 
-function ObjectsPageSkeleton() {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-16 w-full" />
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Skeleton className="h-96 w-full" />
-                <Skeleton className="h-96 w-full" />
-            </div>
-        </div>
-    )
-}
-
 function ObjectsPageContainer() {
     const searchParams = useSearchParams();
     const companyId = searchParams.get('companyId');
@@ -179,7 +182,7 @@ function ObjectsPageContainer() {
         setLoading(true);
         Promise.all([
             getObjectsTree(companyIdNum),
-            getAllObjects(),
+            getAllObjects(companyIdNum),
             getDevices(companyIdNum),
         ]).then(([fetchedTree, fetchedObjects, fetchedDevices]) => {
             setTree(fetchedTree);
