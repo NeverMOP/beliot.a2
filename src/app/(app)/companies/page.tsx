@@ -17,6 +17,7 @@ import {
 } from '@tanstack/react-table';
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateCompanyForm } from "@/components/companies/create-company-form";
 
 function CompaniesPageSkeleton() {
     return (
@@ -51,10 +52,7 @@ function CompaniesPageContent({ companies }: { companies: Company[] }) {
       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
         <h1 className="text-lg font-semibold text-secondary-foreground">Компании</h1>
         <div className="ml-auto flex items-center gap-2">
-            <Button disabled variant="outline-primary">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Создать компанию
-            </Button>
+            <CreateCompanyForm />
         </div>
       </div>
       <DataTable columns={columns} data={companies} table={table} />
