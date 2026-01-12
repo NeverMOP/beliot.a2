@@ -15,11 +15,11 @@ const mockCompanies: Company[] = [
 ];
 
 const mockUsers: User[] = [
-  { id: 1, full_name: 'Иван Петров', email: 'ivan.p@example.com', role: 'admin', companyId: 1 },
-  { id: 2, full_name: 'Анна Сидорова', email: 'anna.s@example.com', role: 'user', companyId: 3 },
-  { id: 3, full_name: 'Сергей Иванов', email: 'sergey.i@example.com', role: 'viewer', companyId: 4 },
-  { id: 4, full_name: 'Ольга Николаева', email: 'olga.n@example.com', role: 'user', companyId: 2 },
-  { id: 5, full_name: 'Дмитрий Васильев', email: 'dmitry.v@example.com', role: 'admin', companyId: 5 },
+  { id: 1, full_name: 'Иван Петров', email: 'ivan.p@example.com', role: 'admin', companyId: 1, permissions: { canCreateDevices: true, canCreateObjects: true, canCreateCompanies: true, canEditUsers: true, accessibleCompanies: 'all' } },
+  { id: 2, full_name: 'Анна Сидорова', email: 'anna.s@example.com', role: 'user', companyId: 3, permissions: { canCreateDevices: true, canCreateObjects: false, canCreateCompanies: false, canEditUsers: false, accessibleCompanies: [3, 4] } },
+  { id: 3, full_name: 'Сергей Иванов', email: 'sergey.i@example.com', role: 'viewer', companyId: 4, permissions: { canCreateDevices: false, canCreateObjects: false, canCreateCompanies: false, canEditUsers: false, accessibleCompanies: [4] } },
+  { id: 4, full_name: 'Ольга Николаева', email: 'olga.n@example.com', role: 'user', companyId: 2, permissions: { canCreateDevices: true, canCreateObjects: true, canCreateCompanies: false, canEditUsers: false, accessibleCompanies: [2] } },
+  { id: 5, full_name: 'Дмитрий Васильев', email: 'dmitry.v@example.com', role: 'admin', companyId: 5, permissions: { canCreateDevices: true, canCreateObjects: true, canCreateCompanies: true, canEditUsers: true, accessibleCompanies: 'all' } },
 ];
 
 

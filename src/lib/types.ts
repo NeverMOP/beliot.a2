@@ -1,3 +1,4 @@
+
 export type BeliotObject = {
     id: number;
     name: string;
@@ -17,12 +18,21 @@ export type DeviceAttribute = {
     value: string;
 }
 
+export type UserPermissions = {
+    canEditUsers: boolean;
+    canCreateDevices: boolean;
+    canCreateObjects: boolean;
+    canCreateCompanies: boolean;
+    accessibleCompanies: 'all' | number[];
+};
+
 export type User = {
     id: number;
     email: string;
     full_name: string;
     role: 'admin' | 'user' | 'viewer';
     companyId?: number;
+    permissions: UserPermissions;
 }
 
 export type Company = {
@@ -78,3 +88,4 @@ export type Reading = {
   temp_supply?: number;
   temp_return?: number;
 };
+
