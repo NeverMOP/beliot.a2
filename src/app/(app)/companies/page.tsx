@@ -2,8 +2,6 @@
 
 import { DataTable } from "@/components/devices/data-table";
 import { columns as companyColumns } from "@/components/companies/columns";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import * as React from 'react';
 import { type Company } from "@/lib/types";
 import { 

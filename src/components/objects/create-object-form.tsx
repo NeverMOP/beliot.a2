@@ -38,7 +38,7 @@ import { objectTypes } from "@/lib/catalogs";
 const objectSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
   address: z.string().min(1, "Адрес обязателен"),
-  objectType: z.enum(['residential', 'business_center', 'mall', 'medical', 'school', 'kindergarten', 'heating_point', 'warehouse']),
+  objectType: z.string().min(1, "Тип объекта обязателен"),
 });
 
 type ObjectFormValues = z.infer<typeof objectSchema>;
@@ -103,7 +103,7 @@ export function CreateObjectForm() {
                 <FormItem>
                   <FormLabel>Адрес</FormLabel>
                   <FormControl>
-                    <Input placeholder="ул. Ленина, д. 1, кв. 10" {...field} />
+                    <Input placeholder="ул. Ленина, д. 1" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
