@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,9 +13,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { LogOut, User, Settings } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function UserNav() {
+  const router = useRouter();
   const avatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+
+  const handleLogout = () => {
+    // In a real app, you'd clear the user's session here.
+    router.push('/login');
+  };
 
   return (
     <DropdownMenu>
@@ -46,7 +55,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Выйти</span>
         </DropdownMenuItem>
