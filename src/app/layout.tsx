@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import Image from 'next/image';
+import { Suspense } from 'react';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Beliot Dashboard',
   description: 'IoT-платформа для мониторинга устройств',
 };
-
-const backgroundImageBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // This is a placeholder, the actual image is complex
 
 export default function RootLayout({
   children,
@@ -16,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -26,16 +25,11 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <div className="fixed inset-0 z-[-1] opacity-80">
-            <Image
-                src="https://storage.googleapis.com/stedi-assets/belit-background-iot.png"
-                alt="IoT background"
-                fill
-                className="object-cover"
-                quality={100}
-            />
-        </div>
-        <div className="relative z-0">{children}</div>
+        <Suspense>
+          <FirebaseClientProvider>
+            {children}
+          </FirebaseClientProvider>
+        </Suspense>
         <Toaster />
       </body>
     </html>

@@ -11,45 +11,50 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { LogOut, User, Settings } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useAuth, useUser } from '@/firebase';
 
 export function UserNav() {
-  const router = useRouter();
-  const avatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const { user } = useUser();
+  const auth = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, you'd clear the user's session here.
-    router.push('/login');
+  const handleLogout = async () => {
+    await auth.signOut();
+    // The redirect to /login is handled by the main app layout's effect
   };
+  
+  if (!user) {
+    return null; // Or a login button if you prefer
+  }
+
+  const userInitial = user.displayName ? user.displayName[0] : (user.email ? user.email[0] : 'U');
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-black/10">
           <Avatar className="h-10 w-10 border">
-            {avatar && <AvatarImage src={avatar.imageUrl} alt="Администратор" data-ai-hint={avatar.imageHint} />}
-            <AvatarFallback>A</AvatarFallback>
+            {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
+            <AvatarFallback>{userInitial.toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none font-headline">Администратор</p>
+            <p className="text-sm font-medium leading-none font-headline">{user.displayName || 'Пользователь'}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              admin@beliot.local
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem disabled>
             <User className="mr-2 h-4 w-4" />
             <span>Профиль</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem disabled>
             <Settings className="mr-2 h-4 w-4" />
             <span>Настройки</span>
           </DropdownMenuItem>
