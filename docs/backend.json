@@ -1,0 +1,258 @@
+{
+  "entities": {
+    "Device": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Device",
+      "type": "object",
+      "description": "Represents a physical device that sends readings.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the device entity."
+        },
+        "externalId": {
+          "type": "string",
+          "description": "External identifier of the device (IMEI, EUI, serial number)."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of device ('water' or 'heat')."
+        },
+        "model": {
+          "type": "string",
+          "description": "Model of the device (e.g., RSVU-1400)."
+        },
+        "channelType": {
+          "type": "string",
+          "description": "Communication channel type: lora, nbiot, rs485."
+        },
+        "address": {
+          "type": "string",
+          "description": "Installation address of the device."
+        },
+        "objectName": {
+          "type": "string",
+          "description": "Name of the object (building, TP, etc.) where the device is installed."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the device: online, offline, warning."
+        },
+        "unitVolume": {
+          "type": "string",
+          "description": "Unit of volume: 'm³'."
+        },
+        "unitEnergy": {
+          "type": "string",
+          "description": "Unit of energy: 'GJ'."
+        },
+        "unitTemperature": {
+          "type": "string",
+          "description": "Unit of temperature: '°C'."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Time the device was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "externalId",
+        "type"
+      ]
+    },
+    "Reading": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Reading",
+      "type": "object",
+      "description": "Represents a single reading from a device at a specific time.",
+      "properties": {
+        "time": {
+          "type": "string",
+          "description": "Time of the reading (UTC).",
+          "format": "date-time"
+        },
+        "deviceId": {
+          "type": "string",
+          "description": "Reference to Device. (Relationship: Device 1:N Reading)"
+        },
+        "batteryPercent": {
+          "type": "number",
+          "description": "Battery level percentage."
+        },
+        "in1": {
+          "type": "number",
+          "description": "Accumulated volume (m³) - water."
+        },
+        "in2": {
+          "type": "number",
+          "description": "Accumulated volume (m³) - water."
+        },
+        "in3": {
+          "type": "number",
+          "description": "Accumulated volume (m³) - water."
+        },
+        "in4": {
+          "type": "number",
+          "description": "Accumulated volume (m³) - water."
+        },
+        "fflow1": {
+          "type": "number",
+          "description": "Instantaneous flow rate (m³/h) - water."
+        },
+        "fflow2": {
+          "type": "number",
+          "description": "Instantaneous flow rate (m³/h) - water."
+        },
+        "fflow3": {
+          "type": "number",
+          "description": "Instantaneous flow rate (m³/h) - water."
+        },
+        "fflow4": {
+          "type": "number",
+          "description": "Instantaneous flow rate (m³/h) - water."
+        },
+        "energy": {
+          "type": "number",
+          "description": "Energy (GJ) - heat."
+        },
+        "mass1": {
+          "type": "number",
+          "description": "Mass (t) - heat."
+        },
+        "mass2": {
+          "type": "number",
+          "description": "Mass (t) - heat."
+        },
+        "mass3": {
+          "type": "number",
+          "description": "Mass (t) - heat."
+        },
+        "mass4": {
+          "type": "number",
+          "description": "Mass (t) - heat."
+        },
+        "tempSupply": {
+          "type": "number",
+          "description": "Supply temperature (°C)."
+        },
+        "tempReturn": {
+          "type": "number",
+          "description": "Return temperature (°C)."
+        },
+        "rssi": {
+          "type": "number",
+          "description": "Signal level (dBm, e.g., -72)."
+        },
+        "errorFlags": {
+          "type": "number",
+          "description": "Bitwise error flags."
+        }
+      },
+      "required": [
+        "time",
+        "deviceId"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Beliot Dashboard application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user (e.g., admin)."
+        },
+        "googleId": {
+          "type": "string",
+          "description": "Google ID of the user, used for Google login."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "fullName",
+        "role",
+        "googleId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/devices/{deviceId}",
+        "definition": {
+          "entityName": "Device",
+          "schema": {
+            "$ref": "#/backend/entities/Device"
+          },
+          "description": "Stores device metadata. The deviceId is used as the document ID.",
+          "params": [
+            {
+              "name": "deviceId",
+              "description": "Unique identifier for the device."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/devices/{deviceId}/readings/{readingId}",
+        "definition": {
+          "entityName": "Reading",
+          "schema": {
+            "$ref": "#/backend/entities/Reading"
+          },
+          "description": "Stores readings associated with each device. The readingId is used as the document ID.",
+          "params": [
+            {
+              "name": "deviceId",
+              "description": "Unique identifier for the device."
+            },
+            {
+              "name": "readingId",
+              "description": "Unique identifier for the reading."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. The userId is used as the document ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "Unique identifier for the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage devices, readings, and user authentication using Google Sign-In. The primary focus is on ensuring secure access and data integrity while adhering to the principles of Authorization Independence and Structural Segregation.\n\n*   **/devices/{deviceId}**: Stores device metadata. This structure allows for easy lookup and management of individual devices.\n*   **/devices/{deviceId}/readings/{readingId}**: Stores readings associated with each device. The readings are nested under the device to maintain a clear parent-child relationship.\n*   **/users/{userId}**: Stores user profiles. The inclusion of `googleId` facilitates Google Sign-In.\n\n**Authorization Independence:**\n\n*   There are no denormalized fields since authorization is handled through the `users` collection and path-based rules (e.g., only the user with a matching `userId` can access `/users/{userId}`).\n\n**QAPs (Rules are not Filters):**\n\n*   The structure supports secure `list` operations by ensuring that each collection follows a consistent security posture. For example, listing devices requires appropriate authentication and authorization based on the defined rules."
+  }
+}

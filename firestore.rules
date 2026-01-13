@@ -1,0 +1,144 @@
+rules_version = '2';
+
+/**
+ * This ruleset provides security for a Beliot Dashboard application.
+ *
+ * Core Philosophy:
+ * The security model separates user data from device data. User data is strictly
+ * private and follows a user-ownership model, where only the authenticated user
+ * can access their own information. Device and reading data is treated as
+ * read-only for all authenticated users, suitable for a dashboard display.
+ * Client-side applications are prevented from writing device data, which is a
+ * security best practice for IoT data that should be ingested via a trusted
+ * backend service (e.g., Cloud Functions).
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores private user profile information. The document ID
+ *   must match the user's authentication UID.
+ * - /devices/{deviceId}: A top-level collection containing metadata for each
+ *   physical device.
+ * - /devices/{deviceId}/readings/{readingId}: A subcollection containing
+ *   time-series data for a specific device.
+ *
+ * Key Security Decisions:
+ * - User Data Privacy: Users can only read and write their own document in the
+ *   /users collection. Listing users is explicitly disabled to protect user privacy.
+ * - Read-Only Device Data: The /devices collection and its subcollections are
+ *   readable by any signed-in user but cannot be modified by them. This secure
+ *   default assumes device data is populated by a backend process, preventing
+ *   unauthorized tampering from the client-side. This decision is necessary
+ *   because the 'Device' entity lacks an `ownerId` field to securely grant
+ *   write permissions to specific users.
+ * - Deny by Default: All paths are closed by default. Access is granted only
+ *   through explicit `allow` rules.
+ *
+ * Denormalization for Authorization:
+ * This ruleset does not require denormalization because of the clear separation
+ * between user-owned data and globally-readable device data. The user's own UID
+ * is sufficient for securing their profile.
+ *
+ * Structural Segregation:
+ * The data is structurally segregated into a private user collection (/users)
+ * and a read-only device data collection tree (/devices), which simplifies
+ * security rules and prevents accidental data leakage.
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the foundation of the user-ownership model.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if a document exists and if the current user is the owner.
+     * Used for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that a user is creating their own profile document and that
+     * the document's internal `id` field correctly matches their auth UID.
+     */
+    function isCreatingOwnProfile(userId) {
+      return isOwner(userId) && request.resource.data.id == userId;
+    }
+
+    /**
+     * Enforces immutability for critical fields during a profile update.
+     * The user's `id` and `googleId` cannot be changed after creation.
+     */
+    function isMaintainingOwnProfile() {
+      return request.resource.data.id == resource.data.id
+          && request.resource.data.googleId == resource.data.googleId;
+    }
+
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Manages user profiles. Only the document owner can access or modify their own profile.
+     * @path /users/{userId}
+     * @allow (get) A signed-in user with auth.uid 'user123' reading their own document at /users/user123.
+     * @deny (get) A signed-in user with auth.uid 'user456' trying to read /users/user123.
+     * @deny (list) Any user trying to list all documents in the /users collection.
+     * @principle Restricts access to a user's own data tree, enforcing privacy and ownership.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isCreatingOwnProfile(userId);
+      allow update: if isExistingOwner(userId) && isMaintainingOwnProfile();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages device metadata. Data is read-only for any authenticated user.
+     * @path /devices/{deviceId}
+     * @allow (get) Any signed-in user reading a document at /devices/deviceABC.
+     * @deny (create) Any client-side user trying to create a new device document.
+     * @deny (update) Any client-side user trying to update an existing device document.
+     * @principle Secures IoT data by making it read-only on the client, assuming writes are handled by a trusted backend.
+     */
+    match /devices/{deviceId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Manages time-series readings for a device. Data is read-only for any authenticated user.
+     * @path /devices/{deviceId}/readings/{readingId}
+     * @allow (list) Any signed-in user listing readings at /devices/deviceABC/readings.
+     * @deny (create) Any client-side user trying to add a new reading.
+     * @deny (delete) Any client-side user trying to remove a reading.
+     * @principle Inherits the security posture of its parent, ensuring consistent read-only access for IoT data.
+     */
+    match /devices/{deviceId}/readings/{readingId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
