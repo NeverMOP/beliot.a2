@@ -41,7 +41,7 @@ const userSchema = z.object({
   role: z.enum(["admin", "user", "viewer"], {
     required_error: "Необходимо выбрать роль",
   }),
-  companyId: z.string().min(1, "Необходимо выбрать компанию"),
+  companyId: z.string().optional(),
 });
 
 type UserFormValues = z.infer<typeof userSchema>;
@@ -144,7 +144,7 @@ export function CreateUserForm({ companies }: CreateUserFormProps) {
               name="companyId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Компания</FormLabel>
+                  <FormLabel>Компания (необязательно)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -152,6 +152,7 @@ export function CreateUserForm({ companies }: CreateUserFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                        <SelectItem value="">Нет</SelectItem>
                       {companies.map(c => (
                         <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
                       ))}

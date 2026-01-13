@@ -2,7 +2,7 @@
 
 import React from "react";
 import { type ColumnDef, type Row } from "@tanstack/react-table"
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { type Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -11,11 +11,13 @@ import { Menu, ChevronsRight, LogIn } from "lucide-react"
 const ActionsCell = ({ row }: { row: Row<Company> }) => {
     const company = row.original;
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     const handleLogin = () => {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(searchParams.toString());
         params.set("companyId", String(company.id));
-        router.push(`/dashboard?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     return (

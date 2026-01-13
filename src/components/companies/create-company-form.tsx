@@ -34,7 +34,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
 import { type Company } from "@/lib/types";
-import { getCompanies } from "@/lib/data";
 
 const companySchema = z.object({
   name: z.string().min(1, "Название обязательно"),
@@ -44,16 +43,13 @@ const companySchema = z.object({
 
 type CompanyFormValues = z.infer<typeof companySchema>;
 
-export function CreateCompanyForm() {
-  const [open, setOpen] = React.useState(false);
-  const [companies, setCompanies] = React.useState<Company[]>([]);
-  const { toast } = useToast();
+interface CreateCompanyFormProps {
+    companies: Company[];
+}
 
-  React.useEffect(() => {
-    if (open) {
-      getCompanies().then(setCompanies);
-    }
-  }, [open]);
+export function CreateCompanyForm({ companies }: CreateCompanyFormProps) {
+  const [open, setOpen] = React.useState(false);
+  const { toast } = useToast();
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companySchema),

@@ -1,5 +1,6 @@
 'use client'
 
+import { getCompaniesTree } from "@/lib/data";
 import { DataTable } from "@/components/devices/data-table";
 import { columns as companyColumns } from "@/components/companies/columns";
 import * as React from 'react';
@@ -14,7 +15,6 @@ import {
 } from '@tanstack/react-table';
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCompaniesTree } from "@/lib/data";
 import { CreateCompanyForm } from "@/components/companies/create-company-form";
 
 function CompaniesPageSkeleton() {
@@ -50,7 +50,7 @@ function CompaniesPageContent({ companies }: { companies: Company[] }) {
       <div className="flex h-16 items-center gap-4 rounded-md bg-secondary px-4">
         <h1 className="text-lg font-semibold text-secondary-foreground">Компании</h1>
         <div className="ml-auto flex items-center gap-2">
-            <CreateCompanyForm />
+            <CreateCompanyForm companies={companies} />
         </div>
       </div>
       <DataTable columns={columns} data={companies} table={table} />
@@ -59,8 +59,21 @@ function CompaniesPageContent({ companies }: { companies: Company[] }) {
 }
 
 
-async function CompaniesPageContainer() {
-    const tree = await getCompaniesTree();
+function CompaniesPageContainer() {
+    const [tree, setTree] = React.useState<Company[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    
+    React.useEffect(() => {
+        setLoading(true);
+        getCompaniesTree().then(fetchedTree => {
+            setTree(fetchedTree);
+            setLoading(false);
+        })
+    }, [])
+
+    if (loading) {
+        return <CompaniesPageSkeleton />
+    }
     return <CompaniesPageContent companies={tree} />
 }
 
